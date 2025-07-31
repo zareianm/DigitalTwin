@@ -8,12 +8,54 @@ definitions:
       name:
         type: string
     type: object
+  main.AnalysisResult:
+    properties:
+      big_loop_warning:
+        type: boolean
+      loop_count:
+        type: integer
+      static_issues:
+        items:
+          type: string
+        type: array
+      syntax_errors:
+        items:
+          type: string
+        type: array
+      syscall_keywords:
+        items:
+          type: string
+        type: array
+      syscall_warning:
+        type: boolean
+    type: object
 info:
   contact: {}
   description: A rest API in Go using Gin framework
   title: Go Gin Rest API
   version: "1.0"
 paths:
+  /api/v1/jobs/create:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Creates a new job
+      parameters:
+      - description: C++ source file to scan
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/main.AnalysisResult'
+      summary: Creates a new job
+      tags:
+      - jobs
   /api/v1/users:
     get:
       consumes:

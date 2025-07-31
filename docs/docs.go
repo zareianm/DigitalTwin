@@ -15,6 +15,38 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/api/v1/jobs/create": {
+            "post": {
+                "description": "Creates a new job",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "jobs"
+                ],
+                "summary": "Creates a new job",
+                "parameters": [
+                    {
+                        "type": "file",
+                        "description": "C++ source file to scan",
+                        "name": "file",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/main.AnalysisResult"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/users": {
             "get": {
                 "description": "Returns all users",
@@ -203,6 +235,38 @@ const docTemplate = `{
                 },
                 "name": {
                     "type": "string"
+                }
+            }
+        },
+        "main.AnalysisResult": {
+            "type": "object",
+            "properties": {
+                "big_loop_warning": {
+                    "type": "boolean"
+                },
+                "loop_count": {
+                    "type": "integer"
+                },
+                "static_issues": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "syntax_errors": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "syscall_keywords": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "syscall_warning": {
+                    "type": "boolean"
                 }
             }
         }

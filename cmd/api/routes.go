@@ -30,6 +30,8 @@ func (app *application) routes() http.Handler {
 		v1.POST("/users/create", app.createUser)
 		v1.PUT("/users/update", app.updateUser)
 		v1.DELETE("/users/delete/:id", app.deleteUser)
+
+		v1.POST("/jobs/create", app.createJob)
 	}
 
 	g.GET("/swagger/*any", func(c *gin.Context) {
