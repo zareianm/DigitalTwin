@@ -1,14 +1,18 @@
 package main
 
 import (
+	"DigitalTwin/internal/database"
 	"bytes"
+	"database/sql"
 	"io"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"regexp"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -107,6 +111,34 @@ func checkCppError(filePath string) string {
 	return ""
 }
 
+// ScheduleTask schedules a task
+//
+//		@Summary		schedules a task
+//		@Description	schedules a task
+//		@Tags			jobs
+//	    @Accept       	json
+//		@Produce		json
+//		@Param			task	body		database.Task	true	"Task"
+//		@Success		201		{object}	SaveJobResult
+//		@Router			/api/v1/jobs/scheduleTask [post]
+func (app *application) scheduleTask(c *gin.Context) {
+
+	var task database.Task
+
+	if err := c.BindJSON(&task); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	err := app.models.Tasks.Insert(&task)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	app.register(task)
+	c.JSON(http.StatusCreated, task)
+}
+
 // runCommand executes a command and returns its stderr/stdout lines.
 func runCommand(name string, args ...string) string {
 	cmd := exec.Command(name, args...)
@@ -163,4 +195,43 @@ func scanSyscalls(src string) []string {
 		list = append(list, k)
 	}
 	return list
+}
+
+func (app *application) runMissedTasks(db *sql.DB) {
+	// --------------------------- scheduler setup ----------------------------
+
+	// load previously persisted tasks
+	rows, err := db.Query(`SELECT id, name, cron_spec, payload, last_run FROM tasks`)
+	if err != nil {
+		log.Fatalf("query tasks: %v", err)
+	}
+	for rows.Next() {
+		var (
+			t          database.Task
+			lastRunInt int64
+		)
+		if err := rows.Scan(&t.ID, &t.Name, &t.CronSpec, &t.Payload, &lastRunInt); err != nil {
+			log.Printf("scan task: %v", err)
+			continue
+		}
+		if lastRunInt != 0 {
+			t.LastRun = time.Unix(lastRunInt, 0)
+		}
+		app.register(t)
+	}
+	rows.Close()
+}
+
+func (app *application) register(t database.Task) {
+	// capture by value so each closure has its own copy
+	_, err := app.cr.AddFunc(t.CronSpec, func() { app.runJob(t) })
+	if err != nil {
+		log.Printf("failed to register task %d: %v", t.ID, err)
+	}
+}
+
+func (app *application) runJob(t database.Task) {
+	log.Printf("Running task %s (ID %d) with payload: %s", t.Name, t.ID, t.Payload)
+
+	app.models.Tasks.UpdateLastExecute(&t)
 }

@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"log"
 	"os"
+	"strconv"
 
 	"github.com/golang-migrate/migrate"
 	"github.com/golang-migrate/migrate/database/postgres"
@@ -51,6 +52,17 @@ func main() {
 	case "down":
 		if err := m.Down(); err != nil && err != migrate.ErrNoChange {
 			log.Fatal(err)
+		}
+	case "force":
+		if len(os.Args) < 3 {
+			log.Fatalf("Missing version for force")
+		}
+		version, err := strconv.Atoi(os.Args[2])
+		if err != nil {
+			log.Fatalf("Invalid version: %v", err)
+		}
+		if err := m.Force(version); err != nil {
+			log.Fatalf("Force failed: %v", err)
 		}
 	default:
 		log.Fatal("Invalid direction. Use 'up' or 'down'")

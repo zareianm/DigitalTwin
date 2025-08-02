@@ -41,7 +41,41 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/main.AnalysisResult"
+                            "$ref": "#/definitions/main.SaveJobResult"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/jobs/scheduleTask": {
+            "post": {
+                "description": "schedules a task",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "jobs"
+                ],
+                "summary": "schedules a task",
+                "parameters": [
+                    {
+                        "description": "Task",
+                        "name": "task",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/database.Task"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/main.SaveJobResult"
                         }
                     }
                 }
@@ -224,6 +258,26 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "database.Task": {
+            "type": "object",
+            "properties": {
+                "cron_spec": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "last_run": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "payload": {
+                    "type": "string"
+                }
+            }
+        },
         "database.User": {
             "type": "object",
             "properties": {
@@ -238,34 +292,13 @@ const docTemplate = `{
                 }
             }
         },
-        "main.AnalysisResult": {
+        "main.SaveJobResult": {
             "type": "object",
             "properties": {
-                "big_loop_warning": {
-                    "type": "boolean"
+                "errors": {
+                    "type": "string"
                 },
-                "loop_count": {
-                    "type": "integer"
-                },
-                "static_issues": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "syntax_errors": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "syscall_keywords": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "syscall_warning": {
+                "success": {
                     "type": "boolean"
                 }
             }

@@ -10,6 +10,7 @@ import (
 
 	_ "github.com/joho/godotenv/autoload"
 	_ "github.com/lib/pq"
+	"github.com/robfig/cron/v3"
 )
 
 // @title Go Gin Rest API
@@ -24,6 +25,7 @@ type application struct {
 	port      int
 	jwtSecret string
 	models    database.Models
+	cr        *cron.Cron
 }
 
 func main() {
@@ -41,9 +43,15 @@ func main() {
 		port:      env.GetEnvInt("PORT", 8080),
 		jwtSecret: env.GetEnvString("JWT_SECRET", "some-secret-123456"),
 		models:    models,
+		cr:        cron.New(cron.WithSeconds()),
 	}
+
+	app.cr.Start()
+
+	app.runMissedTasks(db)
 
 	if err := app.serve(); err != nil {
 		log.Fatal(err)
 	}
+
 }

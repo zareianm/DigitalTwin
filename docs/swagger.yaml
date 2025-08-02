@@ -1,4 +1,17 @@
 definitions:
+  database.Task:
+    properties:
+      cron_spec:
+        type: string
+      id:
+        type: integer
+      last_run:
+        type: string
+      name:
+        type: string
+      payload:
+        type: string
+    type: object
   database.User:
     properties:
       email:
@@ -8,25 +21,11 @@ definitions:
       name:
         type: string
     type: object
-  main.AnalysisResult:
+  main.SaveJobResult:
     properties:
-      big_loop_warning:
-        type: boolean
-      loop_count:
-        type: integer
-      static_issues:
-        items:
-          type: string
-        type: array
-      syntax_errors:
-        items:
-          type: string
-        type: array
-      syscall_keywords:
-        items:
-          type: string
-        type: array
-      syscall_warning:
+      errors:
+        type: string
+      success:
         type: boolean
     type: object
 info:
@@ -52,8 +51,30 @@ paths:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/main.AnalysisResult'
+            $ref: '#/definitions/main.SaveJobResult'
       summary: Creates a new job
+      tags:
+      - jobs
+  /api/v1/jobs/scheduleTask:
+    post:
+      consumes:
+      - application/json
+      description: schedules a task
+      parameters:
+      - description: Task
+        in: body
+        name: task
+        required: true
+        schema:
+          $ref: '#/definitions/database.Task'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/main.SaveJobResult'
+      summary: schedules a task
       tags:
       - jobs
   /api/v1/users:
