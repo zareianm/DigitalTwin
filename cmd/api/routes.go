@@ -34,6 +34,7 @@ func (app *application) routes() http.Handler {
 		v1.POST("/jobs/create", app.createJob)
 		v1.POST("/jobs/scheduleTask", app.scheduleTask)
 		v1.POST("/jobs/testDocker", app.handleRun)
+		v1.POST("/jobs/saveFile", app.SaveFile)
 	}
 
 	g.GET("/swagger/*any", func(c *gin.Context) {

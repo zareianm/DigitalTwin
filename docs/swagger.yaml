@@ -55,6 +55,27 @@ paths:
       summary: Creates a new job
       tags:
       - jobs
+  /api/v1/jobs/saveFile:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Creates a new job
+      parameters:
+      - description: C++ source file to scan
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/main.SaveJobResult'
+      summary: Creates a new job
+      tags:
+      - jobs
   /api/v1/jobs/scheduleTask:
     post:
       consumes:

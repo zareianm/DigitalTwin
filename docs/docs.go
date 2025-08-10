@@ -47,6 +47,38 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/jobs/saveFile": {
+            "post": {
+                "description": "Creates a new job",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "jobs"
+                ],
+                "summary": "Creates a new job",
+                "parameters": [
+                    {
+                        "type": "file",
+                        "description": "C++ source file to scan",
+                        "name": "file",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/main.SaveJobResult"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/jobs/scheduleTask": {
             "post": {
                 "description": "schedules a task",

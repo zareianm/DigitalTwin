@@ -5,6 +5,8 @@ import (
 	"DigitalTwin/internal/env"
 	"database/sql"
 	"log"
+	"os"
+	"path/filepath"
 
 	_ "DigitalTwin/docs"
 
@@ -37,6 +39,14 @@ func main() {
 	}
 
 	defer db.Close()
+
+	baseUploadDir := "D:\\school\\term8\\project\\uploads"
+
+	baseUploadDir = filepath.Clean(baseUploadDir)
+
+	if err := os.MkdirAll(baseUploadDir, 0o755); err != nil {
+		log.Fatalf("unable to create/upload dir: %v", err)
+	}
 
 	models := database.NewModels(db)
 	app := &application{

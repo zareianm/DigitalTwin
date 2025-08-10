@@ -21,6 +21,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 type SaveJobResult struct {
@@ -420,4 +421,94 @@ func parseArgs(c *gin.Context) []string {
 		return fromJSON
 	}
 	return []string{raw} // fallback: treat as single arg
+}
+
+// CreateJob creates a new job
+//
+//		@Summary		Creates a new job
+//		@Description	Creates a new job
+//		@Tags			jobs
+//	    @Accept       multipart/form-data
+//		@Produce		json
+//	    @Param        file  formData  file  true  "C++ source file to scan"
+//		@Success		201		{object}	SaveJobResult
+//		@Router			/api/v1/jobs/saveFile [post]
+func (app *application) SaveFile(c *gin.Context) {
+	fh, err := c.FormFile("file")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "missing file field 'file'"})
+		return
+	}
+	if fh.Size == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "empty file"})
+		return
+	}
+
+	baseUploadDir := "D:\\school\\term8\\project\\uploads"
+	baseUploadDir = filepath.Clean(baseUploadDir)
+
+	id := uuid.New().String()
+	ext := safeExt(fh.Filename)
+	dst := filepath.Join(baseUploadDir, id+ext)
+
+	// Defensive: make sure dst is really inside baseUploadDir
+	absBase, _ := filepath.Abs(baseUploadDir)
+	absDst, _ := filepath.Abs(dst)
+	if !strings.HasPrefix(absDst, absBase+string(os.PathSeparator)) && absDst != absBase {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid destination path"})
+		return
+	}
+
+	// Create the folder if someone deleted it while the app is running
+	if err := os.MkdirAll(filepath.Dir(dst), 0o755); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "cannot create destination dir"})
+		return
+	}
+
+	if err := saveUploadedFileV2(fh, dst); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "could not save file"})
+		return
+	}
+
+	c.JSON(http.StatusCreated, gin.H{
+		"id":           id,
+		"filename":     filepath.Base(dst),
+		"originalName": filepath.Base(fh.Filename),
+		"size":         fh.Size,
+		"storedAt":     dst,                  // absolute/relative server path
+		"url":          "/files/" + id + ext, // if r.StaticFS enabled
+	})
+}
+
+func saveUploadedFileV2(fileHeader *multipart.FileHeader, dst string) error {
+
+	src, err := fileHeader.Open()
+	if err != nil {
+		return err
+	}
+	defer src.Close()
+
+	// Create destination file (0600 so only the server user can read/write)
+	out, err := os.OpenFile(dst, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0o600)
+	if err != nil {
+		return err
+	}
+	defer out.Close()
+
+	_, err = ioCopy(out, src)
+	return err
+}
+
+// Use a tiny wrapper to allow easy testing/mocking if desired.
+var ioCopy = func(dst *os.File, src multipart.File) (int64, error) {
+	return dst.ReadFrom(src)
+}
+
+// Extract a safe, lowercase extension from the original filename.
+func safeExt(name string) string {
+	ext := strings.ToLower(filepath.Ext(name))
+	// Whitelist a few common ones if you want stricter control:
+	// allowed := map[string]bool{".png": true, ".jpg": true, ".jpeg": true, ".pdf": true, ".txt": true}
+	// if !allowed[ext] { return "" }
+	return ext
 }
