@@ -3,15 +3,21 @@ package main
 import (
 	"DigitalTwin/internal/database"
 	"bytes"
+	"context"
 	"database/sql"
+	"encoding/json"
+	"errors"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
+	"mime/multipart"
 	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"regexp"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -33,20 +39,6 @@ type SaveJobResult struct {
 //		@Success		201		{object}	SaveJobResult
 //		@Router			/api/v1/jobs/create [post]
 func (app *application) createJob(c *gin.Context) {
-	// var job database.Job
-
-	// if err := c.ShouldBindJSON(&job); err != nil {
-	// 	c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-	// 	return
-	// }
-
-	// err := app.models.Jobs.Insert(&job)
-	// if err != nil {
-	// 	c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create job"})
-	// 	return
-	// }
-
-	// c.JSON(http.StatusCreated, job)
 
 	// 1) get file
 	f, header, err := c.Request.FormFile("file")
@@ -234,4 +226,198 @@ func (app *application) runJob(t database.Task) {
 	log.Printf("Running task %s (ID %d) with payload: %s", t.Name, t.ID, t.Payload)
 
 	app.models.Tasks.UpdateLastExecute(&t)
+}
+
+const (
+	compileTimeout = 2000 * time.Second
+	runTimeout     = 2000 * time.Second
+	maxUploadSize  = 1 << 20 // 1 MiB; adjust as needed
+)
+
+const dockerImage = "gcc:13"
+
+// CreateJob creates a new job
+//
+//		@Summary		Creates a new job
+//		@Description	Creates a new job
+//		@Tags			jobs
+//	    @Accept       multipart/form-data
+//		@Produce		json
+//	    @Param        file  formData  file  true  "C++ source file to scan"
+//		@Success		201		{object}	SaveJobResult
+//		@Router			/api/v1/jobs/testDocker [post]
+func (app *application) handleRun(c *gin.Context) {
+	// Read file
+	fileHeader, err := c.FormFile("file")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "missing 'source' file: " + err.Error()})
+		return
+	}
+
+	// Create temp working directory
+	workDir, err := os.MkdirTemp("", "cppwork-*")
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create temp dir"})
+		return
+	}
+	defer os.RemoveAll(workDir)
+
+	// Save uploaded file as main.cpp
+	cppPath := filepath.Join(workDir, "main.cpp")
+	if err := saveUploadedFile(fileHeader, cppPath); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Compile inside Docker
+	appPath := filepath.Join(workDir, "app")
+	if err := dockerCompile(c, workDir, cppPath, appPath); err != nil {
+		status := http.StatusInternalServerError
+		if errors.Is(err, context.DeadlineExceeded) {
+			status = http.StatusGatewayTimeout
+		}
+		c.JSON(status, gin.H{"error": fmt.Sprintf("compile failed: %v", err)})
+		return
+	}
+
+	// Parse args: support repeated form field and JSON array
+	// args := parseArgs(c)
+
+	args := []string{"alice"}
+
+	// Run the binary inside Docker with limits
+	stdout, stderr, exitCode, runErr := dockerRun(workDir, appPath, args)
+	if runErr != nil && !errors.Is(runErr, context.DeadlineExceeded) {
+		// Non-timeout run error (e.g., container failed to start)
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error":    fmt.Sprintf("run failed: %v", runErr),
+			"stdout":   string(stdout),
+			"stderr":   string(stderr),
+			"exitCode": exitCode,
+		})
+		return
+	}
+
+	status := http.StatusOK
+	if errors.Is(runErr, context.DeadlineExceeded) {
+		status = http.StatusGatewayTimeout
+	}
+	c.JSON(status, gin.H{
+		"stdout":   string(stdout),
+		"stderr":   string(stderr),
+		"exitCode": exitCode,
+	})
+}
+
+func saveUploadedFile(fh *multipart.FileHeader, dest string) error {
+	// Basic extension guard (optional): only allow .cpp/.cc/.cxx
+	name := strings.ToLower(fh.Filename)
+	if !(strings.HasSuffix(name, ".cpp") || strings.HasSuffix(name, ".cc") || strings.HasSuffix(name, ".cxx")) {
+		return fmt.Errorf("unsupported file extension; expected .cpp/.cc/.cxx")
+	}
+
+	src, err := fh.Open()
+	if err != nil {
+		return err
+	}
+	defer src.Close()
+
+	out, err := os.Create(dest)
+	if err != nil {
+		return err
+	}
+	defer out.Close()
+
+	if _, err := io.Copy(out, src); err != nil {
+		return err
+	}
+	return nil
+}
+
+func dockerCompile(c *gin.Context, workDir, cppPath, appPath string) error {
+	ctx, cancel := context.WithTimeout(c, compileTimeout)
+	defer cancel()
+
+	cmd := exec.CommandContext(
+		ctx, "docker", "run", "--rm",
+		"-v", fmt.Sprintf("%s:/work", workDir),
+		"-w", "/work",
+		dockerImage, "bash", "-lc",
+		fmt.Sprintf("g++ -std=c++17 -O2 -pipe -static-libstdc++ -static-libgcc main.cpp -o app"),
+	)
+	var stderr bytes.Buffer
+	cmd.Stderr = &stderr
+	cmd.Stdout = nil
+
+	if err := cmd.Run(); err != nil {
+		if ctx.Err() == context.DeadlineExceeded {
+			return ctx.Err()
+		}
+		return fmt.Errorf("%v: %s", err, stderr.String())
+	}
+	// Ensure app exists
+	if _, err := os.Stat(appPath); err != nil {
+		return fmt.Errorf("compiled binary missing: %v", err)
+	}
+	return nil
+}
+
+func dockerRun(workDir, appPath string, args []string) (stdout, stderr []byte, exitCode int, err error) {
+	ctx, cancel := context.WithTimeout(context.Background(), runTimeout)
+	defer cancel()
+
+	// Build the docker run command with strong sandboxing
+	base := []string{
+		"run", "--rm",
+		"--network", "none",
+		"--pids-limit", "128",
+		"-m", "256m",
+		"--cpus", "0.5",
+		"--read-only",
+		"--security-opt", "no-new-privileges",
+		"-v", fmt.Sprintf("%s:/work:ro", workDir),
+		"-w", "/work",
+		"--tmpfs", "/tmp:rw,noexec,nosuid,nodev,size=16m",
+		"--tmpfs", "/run:rw,noexec,nosuid,nodev,size=8m",
+		dockerImage,
+		"/work/app",
+	}
+	cmdArgs := append(base, args...)
+
+	cmd := exec.CommandContext(ctx, "docker", cmdArgs...)
+	var outBuf, errBuf bytes.Buffer
+	cmd.Stdout = &outBuf
+	cmd.Stderr = &errBuf
+
+	runErr := cmd.Run()
+	stdout = outBuf.Bytes()
+	stderr = errBuf.Bytes()
+
+	exitCode = 0
+	var exitErr *exec.ExitError
+	if errors.As(runErr, &exitErr) {
+		exitCode = exitErr.ExitCode()
+	}
+
+	if ctx.Err() == context.DeadlineExceeded {
+		return stdout, stderr, exitCode, ctx.Err()
+	}
+	return stdout, stderr, exitCode, runErr
+}
+
+func parseArgs(c *gin.Context) []string {
+	args := c.PostFormArray("args")
+	if len(args) > 0 {
+		return args
+	}
+	// Try JSON array in a single form field "args"
+	raw := c.PostForm("args")
+	if strings.TrimSpace(raw) == "" {
+		return nil
+	}
+	var fromJSON []string
+	if err := json.Unmarshal([]byte(raw), &fromJSON); err == nil {
+		return fromJSON
+	}
+	return []string{raw} // fallback: treat as single arg
 }
