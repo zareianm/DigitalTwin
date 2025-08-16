@@ -13,6 +13,7 @@ import (
 	_ "github.com/joho/godotenv/autoload"
 	_ "github.com/lib/pq"
 	"github.com/robfig/cron/v3"
+	"github.com/spf13/viper"
 )
 
 // @title Go Gin Rest API
@@ -31,7 +32,14 @@ type application struct {
 }
 
 func main() {
-	dsn := "postgres://postgres:1234@localhost:5432/DigitalTwinDb?sslmode=disable"
+
+	viper.SetConfigName("appsettings")
+	viper.SetConfigType("yaml")
+	viper.AddConfigPath(".")
+	viper.AddConfigPath("../config")
+	_ = viper.ReadInConfig()
+
+	dsn := viper.GetString("databaseconnectionstring")
 
 	db, err := sql.Open("postgres", dsn)
 	if err != nil {
@@ -40,7 +48,7 @@ func main() {
 
 	defer db.Close()
 
-	baseUploadDir := "D:\\school\\term8\\project\\uploads"
+	baseUploadDir := viper.GetString("baseUploadDir")
 
 	baseUploadDir = filepath.Clean(baseUploadDir)
 

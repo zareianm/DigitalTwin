@@ -1,0 +1,2 @@
+databaseconnectionstring: "postgres://postgres:1234@localhost:5432/DigitalTwinDb?sslmode=disable"
+baseUploadDir: "D:\\school\\term8\\project\\uploads"
