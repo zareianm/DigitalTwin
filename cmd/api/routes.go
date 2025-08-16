@@ -31,6 +31,11 @@ func (app *application) routes() http.Handler {
 		v1.PUT("/users/update", app.updateUser)
 		v1.DELETE("/users/delete/:id", app.deleteUser)
 
+		v1.GET("/machines", app.getAllMachines)
+		v1.GET("/machines/:id", app.getMachine)
+		v1.POST("/machines/create", app.createMachine)
+		v1.DELETE("/machines/delete/:id", app.deleteMachine)
+
 		v1.POST("/jobs/create", app.createJob)
 		v1.POST("/jobs/scheduleTask", app.scheduleTask)
 	}

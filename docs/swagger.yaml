@@ -1,4 +1,15 @@
 definitions:
+  database.Machine:
+    properties:
+      input_parameters:
+        type: string
+      machine_id:
+        type: integer
+      name:
+        type: string
+      output_parameters:
+        type: string
+    type: object
   database.Task:
     properties:
       cron_spec:
@@ -55,27 +66,6 @@ paths:
       summary: Creates a new job
       tags:
       - jobs
-  /api/v1/jobs/saveFile:
-    post:
-      consumes:
-      - multipart/form-data
-      description: Creates a new job
-      parameters:
-      - description: C++ source file to scan
-        in: formData
-        name: file
-        required: true
-        type: file
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Created
-          schema:
-            $ref: '#/definitions/main.SaveJobResult'
-      summary: Creates a new job
-      tags:
-      - jobs
   /api/v1/jobs/scheduleTask:
     post:
       consumes:
@@ -98,27 +88,88 @@ paths:
       summary: schedules a task
       tags:
       - jobs
-  /api/v1/jobs/testDocker:
+  /api/v1/machines:
+    get:
+      consumes:
+      - application/json
+      description: Returns all machines
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/database.Machine'
+            type: array
+      summary: Returns all machines
+      tags:
+      - machines
+  /api/v1/machines/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Deletes an existing machine
+      parameters:
+      - description: Machine ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+      security:
+      - BearerAuth: []
+      summary: Deletes an existing machine
+      tags:
+      - machines
+    get:
+      consumes:
+      - application/json
+      description: Returns a single machine
+      parameters:
+      - description: Machine ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/database.Machine'
+      summary: Returns a single machine
+      tags:
+      - machines
+  /api/v1/machines/create:
     post:
       consumes:
-      - multipart/form-data
-      description: Creates a new job
+      - application/json
+      description: Creates a new machine
       parameters:
-      - description: C++ source file to scan
-        in: formData
-        name: file
+      - description: Machine
+        in: body
+        name: machine
         required: true
-        type: file
+        schema:
+          $ref: '#/definitions/database.Machine'
       produces:
       - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/main.SaveJobResult'
-      summary: Creates a new job
+            $ref: '#/definitions/database.Machine'
+      security:
+      - BearerAuth: []
+      summary: Creates a new machine
       tags:
-      - jobs
+      - machines
   /api/v1/users:
     get:
       consumes:

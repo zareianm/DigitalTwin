@@ -39,38 +39,6 @@
                 }
             }
         },
-        "/api/v1/jobs/saveFile": {
-            "post": {
-                "description": "Creates a new job",
-                "consumes": [
-                    "multipart/form-data"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "jobs"
-                ],
-                "summary": "Creates a new job",
-                "parameters": [
-                    {
-                        "type": "file",
-                        "description": "C++ source file to scan",
-                        "name": "file",
-                        "in": "formData",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Created",
-                        "schema": {
-                            "$ref": "#/definitions/main.SaveJobResult"
-                        }
-                    }
-                }
-            }
-        },
         "/api/v1/jobs/scheduleTask": {
             "post": {
                 "description": "schedules a task",
@@ -105,34 +73,131 @@
                 }
             }
         },
-        "/api/v1/jobs/testDocker": {
-            "post": {
-                "description": "Creates a new job",
+        "/api/v1/machines": {
+            "get": {
+                "description": "Returns all machines",
                 "consumes": [
-                    "multipart/form-data"
+                    "application/json"
                 ],
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "jobs"
+                    "machines"
                 ],
-                "summary": "Creates a new job",
+                "summary": "Returns all machines",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/database.Machine"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/machines/create": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Creates a new machine",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "machines"
+                ],
+                "summary": "Creates a new machine",
                 "parameters": [
                     {
-                        "type": "file",
-                        "description": "C++ source file to scan",
-                        "name": "file",
-                        "in": "formData",
-                        "required": true
+                        "description": "Machine",
+                        "name": "machine",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/database.Machine"
+                        }
                     }
                 ],
                 "responses": {
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/main.SaveJobResult"
+                            "$ref": "#/definitions/database.Machine"
                         }
+                    }
+                }
+            }
+        },
+        "/api/v1/machines/{id}": {
+            "get": {
+                "description": "Returns a single machine",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "machines"
+                ],
+                "summary": "Returns a single machine",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Machine ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/database.Machine"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Deletes an existing machine",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "machines"
+                ],
+                "summary": "Deletes an existing machine",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Machine ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
                     }
                 }
             }
@@ -314,6 +379,23 @@
         }
     },
     "definitions": {
+        "database.Machine": {
+            "type": "object",
+            "properties": {
+                "input_parameters": {
+                    "type": "string"
+                },
+                "machine_id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "output_parameters": {
+                    "type": "string"
+                }
+            }
+        },
         "database.Task": {
             "type": "object",
             "properties": {

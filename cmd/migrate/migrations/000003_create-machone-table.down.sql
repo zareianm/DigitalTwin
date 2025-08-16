@@ -1,0 +1,2 @@
+DROP TABLE IF EXISTS parameters;
+DROP TABLE IF EXISTS machines;
