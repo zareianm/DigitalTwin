@@ -1,41 +1,24 @@
 package jobService
 
 import (
-	"bytes"
-	"io"
 	"io/ioutil"
-	"mime/multipart"
-	"os"
-	"os/exec"
-	"path/filepath"
 	"regexp"
 )
 
-func CheckCppError(f multipart.File, header *multipart.FileHeader) string {
-	//save to a temp file
-	tmpDir, _ := ioutil.TempDir("", "cppcheck")
-	defer os.RemoveAll(tmpDir)
+func CheckCppError(filePath string, programArgs []string) (string, string) {
 
-	filePath := filepath.Join(tmpDir, header.Filename)
-	out, err := os.Create(filePath)
-	if err != nil {
-		return "cannot save file"
-	}
-	defer out.Close()
-	io.Copy(out, f)
+	stdOut, errorStr := checkCompileError(filePath, programArgs)
 
-	errorStr := checkCompileError(filePath)
-
-	return errorStr
+	return stdOut, errorStr
 }
 
-func checkCompileError(filePath string) string {
+func checkCompileError(filePath string, programArgs []string) (string, string) {
 
 	// 3) run syntax check with g++
-	syntaxErrs := runCommand("g++", "-std=c++17", "-fsyntax-only", filePath)
+	stdOut, _, runErr := RunCppInDocker(filePath, programArgs)
 
-	if syntaxErrs != "" {
-		return syntaxErrs
+	if runErr != nil {
+		return "", runErr.Error()
 	}
 
 	// 4) read source for heuristics
@@ -47,7 +30,7 @@ func checkCompileError(filePath string) string {
 	bigLoop := loopCount > 20 // arbitrary threshold
 
 	if bigLoop {
-		return "big loop detected"
+		return "", "big loop detected"
 	}
 
 	// 6) scan for syscall-related keywords
@@ -55,10 +38,10 @@ func checkCompileError(filePath string) string {
 	syscallWarn := len(syscallKeys) > 0
 
 	if syscallWarn {
-		return "system call detected"
+		return "", "system call detected"
 	}
 
-	return ""
+	return stdOut, ""
 }
 
 // countLoops returns the number of 'for' and 'while' occurrences.
@@ -97,24 +80,4 @@ func scanSyscalls(src string) []string {
 		list = append(list, k)
 	}
 	return list
-}
-
-// runCommand executes a command and returns its stderr/stdout lines.
-func runCommand(name string, args ...string) string {
-	cmd := exec.Command(name, args...)
-	var out bytes.Buffer
-	var stderr bytes.Buffer
-	cmd.Stdout = &out
-	cmd.Stderr = &stderr
-
-	err := cmd.Run()
-
-	combined := stderr.String() + out.String()
-	if err != nil {
-		// append the Go error (e.g. "exit status 1" or "executable file not found")
-		combined += "\n" + err.Error()
-
-		return combined
-	}
-	return ""
 }

@@ -66,7 +66,7 @@ func main() {
 
 	app.cr.Start()
 
-	app.runMissedTasks(db)
+	app.runMissedTasks()
 
 	if err := app.serve(); err != nil {
 		log.Fatal(err)

@@ -27,40 +27,69 @@
                         "name": "file",
                         "in": "formData",
                         "required": true
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Created",
-                        "schema": {
-                            "$ref": "#/definitions/main.SaveJobResult"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/jobs/scheduleTask": {
-            "post": {
-                "description": "schedules a task",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "jobs"
-                ],
-                "summary": "schedules a task",
-                "parameters": [
+                    },
                     {
-                        "description": "Task",
-                        "name": "task",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/database.Task"
-                        }
+                        "type": "integer",
+                        "description": "ID of the machine",
+                        "name": "machineId",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "interval time in minutes",
+                        "name": "intervalTimeInMinutes",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "collectionFormat": "csv",
+                        "description": "input parmas",
+                        "name": "inputParameters",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "collectionFormat": "csv",
+                        "description": "output parmas",
+                        "name": "outputParameters",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "array",
+                        "items": {
+                            "type": "integer"
+                        },
+                        "collectionFormat": "csv",
+                        "description": "output parmas error rates",
+                        "name": "outputParametersErrorRate",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "format": "date-time",
+                        "description": "start time in RFC3339 format (e.g. 2025-08-18T14:30:00Z)",
+                        "name": "startTime",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "format": "date-time",
+                        "description": "start time in RFC3339 format (e.g. 2025-08-18T14:30:00Z)",
+                        "name": "endTime",
+                        "in": "formData",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -382,36 +411,13 @@
         "database.Machine": {
             "type": "object",
             "properties": {
-                "input_parameters": {
-                    "type": "string"
-                },
                 "machine_id": {
                     "type": "integer"
                 },
                 "name": {
                     "type": "string"
                 },
-                "output_parameters": {
-                    "type": "string"
-                }
-            }
-        },
-        "database.Task": {
-            "type": "object",
-            "properties": {
-                "cron_spec": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "last_run": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "payload": {
+                "parameters": {
                     "type": "string"
                 }
             }
@@ -438,6 +444,9 @@
                 },
                 "success": {
                     "type": "boolean"
+                },
+                "taskId": {
+                    "type": "integer"
                 }
             }
         }

@@ -24,8 +24,7 @@ type runReq struct {
 	Args []string `json:"args"`
 }
 
-func RunCppInDocker(path string) (string, int, error) {
-	args := []string{"Alice"}
+func RunCppInDocker(path string, args []string) (string, int, error) {
 
 	req := runReq{Path: path, Args: args}
 
@@ -69,7 +68,7 @@ func RunCppInDocker(path string) (string, int, error) {
 	if runErr != nil {
 		errStr = runErr.Error()
 
-		return "", -exitCode, errors.New(errStr)
+		return "", exitCode, errors.New(errStr)
 	}
 
 	return string(stdout), exitCode, nil

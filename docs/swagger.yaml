@@ -1,26 +1,11 @@
 definitions:
   database.Machine:
     properties:
-      input_parameters:
-        type: string
       machine_id:
         type: integer
       name:
         type: string
-      output_parameters:
-        type: string
-    type: object
-  database.Task:
-    properties:
-      cron_spec:
-        type: string
-      id:
-        type: integer
-      last_run:
-        type: string
-      name:
-        type: string
-      payload:
+      parameters:
         type: string
     type: object
   database.User:
@@ -38,6 +23,8 @@ definitions:
         type: string
       success:
         type: boolean
+      taskId:
+        type: integer
     type: object
 info:
   contact: {}
@@ -56,6 +43,52 @@ paths:
         name: file
         required: true
         type: file
+      - description: ID of the machine
+        in: formData
+        name: machineId
+        required: true
+        type: integer
+      - description: interval time in minutes
+        in: formData
+        name: intervalTimeInMinutes
+        required: true
+        type: integer
+      - collectionFormat: csv
+        description: input parmas
+        in: formData
+        items:
+          type: string
+        name: inputParameters
+        required: true
+        type: array
+      - collectionFormat: csv
+        description: output parmas
+        in: formData
+        items:
+          type: string
+        name: outputParameters
+        required: true
+        type: array
+      - collectionFormat: csv
+        description: output parmas error rates
+        in: formData
+        items:
+          type: integer
+        name: outputParametersErrorRate
+        required: true
+        type: array
+      - description: start time in RFC3339 format (e.g. 2025-08-18T14:30:00Z)
+        format: date-time
+        in: formData
+        name: startTime
+        required: true
+        type: string
+      - description: start time in RFC3339 format (e.g. 2025-08-18T14:30:00Z)
+        format: date-time
+        in: formData
+        name: endTime
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -64,28 +97,6 @@ paths:
           schema:
             $ref: '#/definitions/main.SaveJobResult'
       summary: Creates a new job
-      tags:
-      - jobs
-  /api/v1/jobs/scheduleTask:
-    post:
-      consumes:
-      - application/json
-      description: schedules a task
-      parameters:
-      - description: Task
-        in: body
-        name: task
-        required: true
-        schema:
-          $ref: '#/definitions/database.Task'
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Created
-          schema:
-            $ref: '#/definitions/main.SaveJobResult'
-      summary: schedules a task
       tags:
       - jobs
   /api/v1/machines:
