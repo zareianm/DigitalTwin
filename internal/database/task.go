@@ -30,9 +30,9 @@ func (m *TaskModel) Insert(task *Task) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	query := `INSERT INTO tasks(machine_id, time_interval, created_at, start_time, end_time, input_parameters, output_parameters, output_parameters_error_rate) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING task_id`
+	query := `INSERT INTO tasks(machine_id, time_interval, created_at, start_time, end_time, input_parameters, output_parameters, output_parameters_error_rate, file_path) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING task_id`
 
-	return m.DB.QueryRowContext(ctx, query, task.MachineId, task.TimeInterval, task.CreatedAt, task.StartTime, task.EndTime, pq.Array(task.InputParameters), pq.Array(task.OutputParameters), pq.Array(task.OutputParametersErrorRate)).Scan(&task.TaskId)
+	return m.DB.QueryRowContext(ctx, query, task.MachineId, task.TimeInterval, task.CreatedAt, task.StartTime, task.EndTime, pq.Array(task.InputParameters), pq.Array(task.OutputParameters), pq.Array(task.OutputParametersErrorRate), task.FilePath).Scan(&task.TaskId)
 }
 
 func (m *TaskModel) UpdateLastExecute(task *Task) error {

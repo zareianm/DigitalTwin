@@ -96,7 +96,7 @@ func (m *MachineModel) Delete(id int) error {
 	return nil
 }
 
-func (m *MachineModel) GetInputParameterValues(machine Machine, neededParameters []string) ([]string, error) {
+func (m *MachineModel) GetParameterValuesFromMachine(machine Machine, neededParameters []string) ([]string, error) {
 	paramsString := machine.Parameters
 
 	var data map[string]interface{}

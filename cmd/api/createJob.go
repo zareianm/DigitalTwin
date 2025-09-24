@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"math"
 	"net/http"
 	"strconv"
 	"time"
@@ -98,7 +99,7 @@ func (app *application) createJob(c *gin.Context) {
 		return
 	}
 
-	args, err := app.models.Machines.GetInputParameterValues(*machine, inputParams)
+	args, err := app.models.Machines.GetParameterValuesFromMachine(*machine, inputParams)
 	if err != nil {
 		c.JSON(404, gin.H{"error": "invalid inputParameters"})
 		return
@@ -200,7 +201,68 @@ func (app *application) registerTask(t database.Task) {
 }
 
 func (app *application) runJob(t database.Task) {
-	//log.Printf("Running task %s (ID %d) with payload: %s", t.Name, t.ID, t.Payload)
 
+	now := time.Now().UTC()
+
+	if now.Before(t.StartTime) || now.After(t.EndTime) {
+		return
+	}
+
+	machine, err := app.models.Machines.Get(t.MachineId)
+	if err != nil {
+		return
+	}
+
+	args, err := app.models.Machines.GetParameterValuesFromMachine(*machine, t.InputParameters)
+	if err != nil {
+		return
+	}
+
+	stdOut, _, err := jobService.RunCppInDocker(t.FilePath, args)
+	if err != nil {
+		return
+	}
+
+	resultsFromCode, err := app.models.Machines.GetOutputResultsFromCodeResult(stdOut, t.OutputParameters)
+	if err != nil {
+		return
+	}
+
+	realOutputResult, _ := app.models.Machines.GetParameterValuesFromMachine(*machine, t.OutputParameters)
+
+	var taskLog database.TaskLog = database.TaskLog{
+		TaskId:                       t.TaskId,
+		InputParameterNames:          t.InputParameters,
+		OutputParameterNames:         t.OutputParameters,
+		CreatedAt:                    time.Now().UTC(),
+		Status:                       make([]bool, len(t.OutputParameters)),
+		OutputParameterRealValues:    realOutputResult,
+		InputParameterValues:         args,
+		OutputParameterFromCodeVales: resultsFromCode,
+	}
+
+	for i, result := range resultsFromCode {
+		expectedValue, _ := strconv.ParseFloat(result, 64)
+		realResultValue, _ := strconv.ParseFloat(realOutputResult[i], 64)
+		errorRate := t.OutputParametersErrorRate[i]
+
+		taskLog.Status[i] = isSafe(expectedValue, realResultValue, errorRate)
+	}
+
+	err = app.models.TaskLogs.Insert(&taskLog)
+
+	if err != nil {
+		return
+	}
 	app.models.Tasks.UpdateLastExecute(&t)
+}
+
+func isSafe(expectedValue, realValue float64, errorRateInPercent int64) bool {
+	if expectedValue == 0 {
+		return realValue != 0
+	}
+
+	diff := math.Abs(realValue-expectedValue) / expectedValue * 100
+
+	return diff <= float64(errorRateInPercent)
 }
