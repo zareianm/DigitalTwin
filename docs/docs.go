@@ -110,6 +110,32 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/jobs/getJobList": {
+            "get": {
+                "description": "Returns all jobs",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "jobs"
+                ],
+                "summary": "Returns all jobs",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/database.User"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/machines": {
             "get": {
                 "description": "Returns all machines",

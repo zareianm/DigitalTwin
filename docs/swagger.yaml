@@ -99,6 +99,23 @@ paths:
       summary: Creates a new job
       tags:
       - jobs
+  /api/v1/jobs/getJobList:
+    get:
+      consumes:
+      - application/json
+      description: Returns all jobs
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/database.User'
+            type: array
+      summary: Returns all jobs
+      tags:
+      - jobs
   /api/v1/machines:
     get:
       consumes:
