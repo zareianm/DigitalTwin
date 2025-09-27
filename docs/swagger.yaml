@@ -17,7 +17,7 @@ definitions:
       name:
         type: string
     type: object
-  main.SaveJobResult:
+  main.SaveTaskResult:
     properties:
       errors:
         type: string
@@ -26,96 +26,25 @@ definitions:
       taskId:
         type: integer
     type: object
+  main.TaskOutputModel:
+    properties:
+      created_at:
+        type: string
+      is_active:
+        type: boolean
+      machine_id:
+        type: integer
+      plugin_operating_hours:
+        type: number
+      task_id:
+        type: integer
+    type: object
 info:
   contact: {}
   description: A rest API in Go using Gin framework
   title: Go Gin Rest API
   version: "1.0"
 paths:
-  /api/v1/jobs/create:
-    post:
-      consumes:
-      - multipart/form-data
-      description: Creates a new job
-      parameters:
-      - description: C++ source file to scan
-        in: formData
-        name: file
-        required: true
-        type: file
-      - description: ID of the machine
-        in: formData
-        name: machineId
-        required: true
-        type: integer
-      - description: interval time in minutes
-        in: formData
-        name: intervalTimeInMinutes
-        required: true
-        type: integer
-      - collectionFormat: csv
-        description: input parmas
-        in: formData
-        items:
-          type: string
-        name: inputParameters
-        required: true
-        type: array
-      - collectionFormat: csv
-        description: output parmas
-        in: formData
-        items:
-          type: string
-        name: outputParameters
-        required: true
-        type: array
-      - collectionFormat: csv
-        description: output parmas error rates
-        in: formData
-        items:
-          type: integer
-        name: outputParametersErrorRate
-        required: true
-        type: array
-      - description: start time in RFC3339 format (e.g. 2025-08-18T14:30:00Z)
-        format: date-time
-        in: formData
-        name: startTime
-        required: true
-        type: string
-      - description: start time in RFC3339 format (e.g. 2025-08-18T14:30:00Z)
-        format: date-time
-        in: formData
-        name: endTime
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Created
-          schema:
-            $ref: '#/definitions/main.SaveJobResult'
-      summary: Creates a new job
-      tags:
-      - jobs
-  /api/v1/jobs/getJobList:
-    get:
-      consumes:
-      - application/json
-      description: Returns all jobs
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/database.User'
-            type: array
-      summary: Returns all jobs
-      tags:
-      - jobs
   /api/v1/machines:
     get:
       consumes:
@@ -198,6 +127,90 @@ paths:
       summary: Creates a new machine
       tags:
       - machines
+  /api/v1/tasks/create:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Creates a new task
+      parameters:
+      - description: C++ source file to scan
+        in: formData
+        name: file
+        required: true
+        type: file
+      - description: ID of the machine
+        in: formData
+        name: machineId
+        required: true
+        type: integer
+      - description: interval time in minutes
+        in: formData
+        name: intervalTimeInMinutes
+        required: true
+        type: integer
+      - collectionFormat: csv
+        description: input parmas
+        in: formData
+        items:
+          type: string
+        name: inputParameters
+        required: true
+        type: array
+      - collectionFormat: csv
+        description: output parmas
+        in: formData
+        items:
+          type: string
+        name: outputParameters
+        required: true
+        type: array
+      - collectionFormat: csv
+        description: output parmas error rates
+        in: formData
+        items:
+          type: integer
+        name: outputParametersErrorRate
+        required: true
+        type: array
+      - description: start time in RFC3339 format (e.g. 2025-08-18T14:30:00Z)
+        format: date-time
+        in: formData
+        name: startTime
+        required: true
+        type: string
+      - description: start time in RFC3339 format (e.g. 2025-08-18T14:30:00Z)
+        format: date-time
+        in: formData
+        name: endTime
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/main.SaveTaskResult'
+      summary: Creates a new task
+      tags:
+      - tasks
+  /api/v1/tasks/getTaskList:
+    get:
+      consumes:
+      - application/json
+      description: Returns all tasks
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/main.TaskOutputModel'
+            type: array
+      summary: Returns all tasks
+      tags:
+      - tasks
   /api/v1/users:
     get:
       consumes:

@@ -7,16 +7,16 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// GetJobs returns all jobs
+// GetTasks returns all tasks
 //
-//	@Summary		Returns all jobs
-//	@Description	Returns all jobs
-//	@Tags			jobs
+//	@Summary		Returns all tasks
+//	@Description	Returns all tasks
+//	@Tags			tasks
 //	@Accept			json
 //	@Produce		json
-//	@Success		200		{object}	[]database.User
-//	@Router			/api/v1/jobs/getJobList [get]
-func (app *application) getAllJobs(c *gin.Context) {
+//	@Success		200		{object}	[]TaskOutputModel
+//	@Router			/api/v1/tasks/getTaskList [get]
+func (app *application) getAllTasks(c *gin.Context) {
 
 	tasks, err := app.models.Tasks.GetAll()
 
@@ -55,5 +55,5 @@ type TaskOutputModel struct {
 	MachineId            int       `json:"machine_id"`
 	CreatedAt            time.Time `json:"created_at"`
 	IsActive             bool      `json:"is_active"`
-	PluginOperatingHours float64   `jason:"plugin_operating_hours"`
+	PluginOperatingHours float64   `json:"plugin_operating_hours"`
 }

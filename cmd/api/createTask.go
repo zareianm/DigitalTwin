@@ -4,28 +4,28 @@ import (
 	"DigitalTwin/internal/database"
 	"errors"
 	"fmt"
-	"log"
-	"math"
 	"net/http"
 	"strconv"
 	"time"
 
-	"DigitalTwin/pkg/jobService"
+	"DigitalTwin/pkg/cppService"
+	"DigitalTwin/pkg/fileService"
+	"DigitalTwin/pkg/taskService"
 
 	"github.com/gin-gonic/gin"
 )
 
-type SaveJobResult struct {
+type SaveTaskResult struct {
 	TaskId  int    `json:"taskId"`
 	Error   string `json:"errors"`
 	Success bool   `json:"success"`
 }
 
-// CreateJob creates a new job
+// CreateTask creates a new task
 //
-//		@Summary		Creates a new job
-//		@Description	Creates a new job
-//		@Tags			jobs
+//		@Summary		Creates a new task
+//		@Description	Creates a new task
+//		@Tags			tasks
 //	    @Accept       	multipart/form-data
 //		@Produce		json
 //	    @Param        	file  		formData  	file	true	"C++ source file to scan"
@@ -36,9 +36,9 @@ type SaveJobResult struct {
 //		@Param        	outputParametersErrorRate     formData  	[]int  	 true  	"output parmas error rates"
 //		@Param    		startTime   formData  string  true  "start time in RFC3339 format (e.g. 2025-08-18T14:30:00Z)" format(date-time)
 //		@Param    		endTime     formData  string  true  "start time in RFC3339 format (e.g. 2025-08-18T14:30:00Z)" format(date-time)
-//		@Success		201			{object}	SaveJobResult
-//		@Router			/api/v1/jobs/create [post]
-func (app *application) createJob(c *gin.Context) {
+//		@Success		201			{object}	SaveTaskResult
+//		@Router			/api/v1/tasks/create [post]
+func (app *application) createTask(c *gin.Context) {
 
 	// 1) get file
 	f, header, err := c.Request.FormFile("file")
@@ -105,17 +105,18 @@ func (app *application) createJob(c *gin.Context) {
 		return
 	}
 
-	filepath, err := jobService.SaveFile(header)
+	filepath, err := fileService.SaveFile(header)
 
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	stdOut, errorStr := jobService.CheckCppError(filepath, args)
+	// To Do multiple language
+	stdOut, errorStr := cppService.CheckCppError(filepath, args)
 
 	if errorStr != "" {
-		result := SaveJobResult{
+		result := SaveTaskResult{
 			Error:   errorStr,
 			Success: false,
 		}
@@ -144,7 +145,7 @@ func (app *application) createJob(c *gin.Context) {
 	err = app.models.Tasks.Insert(&task)
 
 	if err != nil {
-		result := SaveJobResult{
+		result := SaveTaskResult{
 			Error:   err.Error(),
 			Success: true,
 			TaskId:  task.TaskId,
@@ -153,9 +154,9 @@ func (app *application) createJob(c *gin.Context) {
 		return
 
 	}
-	app.registerTask(task)
+	taskService.RegisterTask(task, app.cr, app.models)
 
-	result := SaveJobResult{
+	result := SaveTaskResult{
 		Error:   "",
 		Success: true,
 		TaskId:  task.TaskId,
@@ -177,92 +178,4 @@ func GenerateCronSpec(totalMinutes int) (string, error) {
 	}
 	cronSpec := fmt.Sprintf("0 %d */%d * * *", minutes, hours)
 	return cronSpec, nil
-}
-
-func (app *application) runMissedTasks() {
-	// load previously persisted tasks
-	rows, err := app.models.Tasks.GetAll()
-
-	if err != nil {
-		log.Fatalf("query tasks: %v", err)
-	}
-
-	for i := 0; i < len(rows); i++ {
-		app.registerTask(*rows[i])
-	}
-}
-
-func (app *application) registerTask(t database.Task) {
-	// capture by value so each closure has its own copy
-	_, err := app.cr.AddFunc(t.TimeInterval, func() { app.runJob(t) })
-	if err != nil {
-		log.Printf("failed to register task %d: %v", t.TaskId, err)
-	}
-}
-
-func (app *application) runJob(t database.Task) {
-
-	now := time.Now().UTC()
-
-	if now.Before(t.StartTime) || now.After(t.EndTime) {
-		return
-	}
-
-	machine, err := app.models.Machines.Get(t.MachineId)
-	if err != nil {
-		return
-	}
-
-	args, err := app.models.Machines.GetParameterValuesFromMachine(*machine, t.InputParameters)
-	if err != nil {
-		return
-	}
-
-	stdOut, _, err := jobService.RunCppInDocker(t.FilePath, args)
-	if err != nil {
-		return
-	}
-
-	resultsFromCode, err := app.models.Machines.GetOutputResultsFromCodeResult(stdOut, t.OutputParameters)
-	if err != nil {
-		return
-	}
-
-	realOutputResult, _ := app.models.Machines.GetParameterValuesFromMachine(*machine, t.OutputParameters)
-
-	var taskLog database.TaskLog = database.TaskLog{
-		TaskId:                       t.TaskId,
-		InputParameterNames:          t.InputParameters,
-		OutputParameterNames:         t.OutputParameters,
-		CreatedAt:                    time.Now().UTC(),
-		Status:                       make([]bool, len(t.OutputParameters)),
-		OutputParameterRealValues:    realOutputResult,
-		InputParameterValues:         args,
-		OutputParameterFromCodeVales: resultsFromCode,
-	}
-
-	for i, result := range resultsFromCode {
-		expectedValue, _ := strconv.ParseFloat(result, 64)
-		realResultValue, _ := strconv.ParseFloat(realOutputResult[i], 64)
-		errorRate := t.OutputParametersErrorRate[i]
-
-		taskLog.Status[i] = isSafe(expectedValue, realResultValue, errorRate)
-	}
-
-	err = app.models.TaskLogs.Insert(&taskLog)
-
-	if err != nil {
-		return
-	}
-	app.models.Tasks.UpdateLastExecute(&t)
-}
-
-func isSafe(expectedValue, realValue float64, errorRateInPercent int64) bool {
-	if expectedValue == 0 {
-		return realValue != 0
-	}
-
-	diff := math.Abs(realValue-expectedValue) / expectedValue * 100
-
-	return diff <= float64(errorRateInPercent)
 }

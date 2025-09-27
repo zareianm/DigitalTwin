@@ -3,6 +3,7 @@ package main
 import (
 	"DigitalTwin/internal/database"
 	"DigitalTwin/internal/env"
+	"DigitalTwin/pkg/taskService"
 	"database/sql"
 	"log"
 	"os"
@@ -66,7 +67,7 @@ func main() {
 
 	app.cr.Start()
 
-	app.runMissedTasks()
+	taskService.RunMissedTasks(app.cr, app.models)
 
 	if err := app.serve(); err != nil {
 		log.Fatal(err)

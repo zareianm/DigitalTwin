@@ -36,8 +36,8 @@ func (app *application) routes() http.Handler {
 		v1.POST("/machines/create", app.createMachine)
 		v1.DELETE("/machines/delete/:id", app.deleteMachine)
 
-		v1.POST("/jobs/create", app.createJob)
-		v1.GET("/jobs/getJobList", app.getAllJobs)
+		v1.POST("/tasks/create", app.createTask)
+		v1.GET("/tasks/getTaskList", app.getAllTasks)
 	}
 
 	g.GET("/swagger/*any", func(c *gin.Context) {

@@ -15,127 +15,6 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/api/v1/jobs/create": {
-            "post": {
-                "description": "Creates a new job",
-                "consumes": [
-                    "multipart/form-data"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "jobs"
-                ],
-                "summary": "Creates a new job",
-                "parameters": [
-                    {
-                        "type": "file",
-                        "description": "C++ source file to scan",
-                        "name": "file",
-                        "in": "formData",
-                        "required": true
-                    },
-                    {
-                        "type": "integer",
-                        "description": "ID of the machine",
-                        "name": "machineId",
-                        "in": "formData",
-                        "required": true
-                    },
-                    {
-                        "type": "integer",
-                        "description": "interval time in minutes",
-                        "name": "intervalTimeInMinutes",
-                        "in": "formData",
-                        "required": true
-                    },
-                    {
-                        "type": "array",
-                        "items": {
-                            "type": "string"
-                        },
-                        "collectionFormat": "csv",
-                        "description": "input parmas",
-                        "name": "inputParameters",
-                        "in": "formData",
-                        "required": true
-                    },
-                    {
-                        "type": "array",
-                        "items": {
-                            "type": "string"
-                        },
-                        "collectionFormat": "csv",
-                        "description": "output parmas",
-                        "name": "outputParameters",
-                        "in": "formData",
-                        "required": true
-                    },
-                    {
-                        "type": "array",
-                        "items": {
-                            "type": "integer"
-                        },
-                        "collectionFormat": "csv",
-                        "description": "output parmas error rates",
-                        "name": "outputParametersErrorRate",
-                        "in": "formData",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "format": "date-time",
-                        "description": "start time in RFC3339 format (e.g. 2025-08-18T14:30:00Z)",
-                        "name": "startTime",
-                        "in": "formData",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "format": "date-time",
-                        "description": "start time in RFC3339 format (e.g. 2025-08-18T14:30:00Z)",
-                        "name": "endTime",
-                        "in": "formData",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Created",
-                        "schema": {
-                            "$ref": "#/definitions/main.SaveJobResult"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/jobs/getJobList": {
-            "get": {
-                "description": "Returns all jobs",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "jobs"
-                ],
-                "summary": "Returns all jobs",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/database.User"
-                            }
-                        }
-                    }
-                }
-            }
-        },
         "/api/v1/machines": {
             "get": {
                 "description": "Returns all machines",
@@ -261,6 +140,127 @@ const docTemplate = `{
                 "responses": {
                     "204": {
                         "description": "No Content"
+                    }
+                }
+            }
+        },
+        "/api/v1/tasks/create": {
+            "post": {
+                "description": "Creates a new task",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "tasks"
+                ],
+                "summary": "Creates a new task",
+                "parameters": [
+                    {
+                        "type": "file",
+                        "description": "C++ source file to scan",
+                        "name": "file",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "ID of the machine",
+                        "name": "machineId",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "interval time in minutes",
+                        "name": "intervalTimeInMinutes",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "collectionFormat": "csv",
+                        "description": "input parmas",
+                        "name": "inputParameters",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "collectionFormat": "csv",
+                        "description": "output parmas",
+                        "name": "outputParameters",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "array",
+                        "items": {
+                            "type": "integer"
+                        },
+                        "collectionFormat": "csv",
+                        "description": "output parmas error rates",
+                        "name": "outputParametersErrorRate",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "format": "date-time",
+                        "description": "start time in RFC3339 format (e.g. 2025-08-18T14:30:00Z)",
+                        "name": "startTime",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "format": "date-time",
+                        "description": "start time in RFC3339 format (e.g. 2025-08-18T14:30:00Z)",
+                        "name": "endTime",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/main.SaveTaskResult"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/tasks/getTaskList": {
+            "get": {
+                "description": "Returns all tasks",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "tasks"
+                ],
+                "summary": "Returns all tasks",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/main.TaskOutputModel"
+                            }
+                        }
                     }
                 }
             }
@@ -470,7 +470,7 @@ const docTemplate = `{
                 }
             }
         },
-        "main.SaveJobResult": {
+        "main.SaveTaskResult": {
             "type": "object",
             "properties": {
                 "errors": {
@@ -480,6 +480,26 @@ const docTemplate = `{
                     "type": "boolean"
                 },
                 "taskId": {
+                    "type": "integer"
+                }
+            }
+        },
+        "main.TaskOutputModel": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "is_active": {
+                    "type": "boolean"
+                },
+                "machine_id": {
+                    "type": "integer"
+                },
+                "plugin_operating_hours": {
+                    "type": "number"
+                },
+                "task_id": {
                     "type": "integer"
                 }
             }
