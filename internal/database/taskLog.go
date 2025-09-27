@@ -33,75 +33,38 @@ func (m *TaskLogModel) Insert(taskLog *TaskLog) error {
 	return m.DB.QueryRowContext(ctx, query, taskLog.TaskId, pq.Array(taskLog.InputParameterNames), pq.Array(taskLog.OutputParameterNames), pq.Array(taskLog.Status), taskLog.CreatedAt, pq.Array(taskLog.InputParameterValues), pq.Array(taskLog.OutputParameterRealValues), pq.Array(taskLog.OutputParameterFromCodeVales)).Scan(&taskLog.TaskLogId)
 }
 
-// func (m *TaskLogModel) GetAll() ([]*TaskLog, error) {
-// 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-// 	defer cancel()
+func (m *TaskLogModel) GetTaskLogsWithTaskId(taskId int) ([]*TaskLog, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
 
-// 	query := "SELECT * FROM tasks"
+	query := "SELECT * FROM task_logs WHERE task_id = $1"
 
-// 	rows, err := m.DB.QueryContext(ctx, query)
-// 	if err != nil {
-// 		return nil, err
-// 	}
+	rows, err := m.DB.QueryContext(ctx, query, taskId)
+	if err != nil {
+		return nil, err
+	}
 
-// 	defer rows.Close()
+	defer rows.Close()
 
-// 	tasks := []*TaskLog{}
+	taskLogs := []*TaskLog{}
 
-// 	for rows.Next() {
-// 		var task TaskLog
+	for rows.Next() {
+		var taskLog TaskLog
 
-// 		err := rows.Scan(&task.TaskId, &task.TimeInterval, &task.CreatedAt, &task.LastRun,
-// 			&task.StartTime, &task.EndTime, &task.MachineId, pq.Array(&task.InputParameters),
-// 			pq.Array(&task.OutputParameters), pq.Array(&task.OutputParametersErrorRate), &task.FilePath)
+		err := rows.Scan(&taskLog.TaskLogId, &taskLog.TaskId, pq.Array(&taskLog.InputParameterNames), pq.Array(&taskLog.OutputParameterNames),
+			pq.Array(&taskLog.Status), &taskLog.CreatedAt, pq.Array(&taskLog.InputParameterValues),
+			pq.Array(&taskLog.OutputParameterRealValues), pq.Array(&taskLog.OutputParameterFromCodeVales))
 
-// 		if err != nil {
-// 			return nil, err
-// 		}
+		if err != nil {
+			return nil, err
+		}
 
-// 		tasks = append(tasks, &task)
-// 	}
+		taskLogs = append(taskLogs, &taskLog)
+	}
 
-// 	if err = rows.Err(); err != nil {
-// 		return nil, err
-// 	}
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
 
-// 	return tasks, nil
-
-// }
-
-// func (m *TaskLogModel) Get(id int) (*TaskLog, error) {
-// 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-// 	defer cancel()
-
-// 	query := "SELECT * FROM task WHERE task_id = $1"
-
-// 	var task TaskLog
-
-// 	err := m.DB.QueryRowContext(ctx, query, id).Scan(&task.TaskId, &task.CreatedAt, &task.EndTime, &task.InputParameters,
-// 		&task.LastRun, &task.MachineId, &task.OutputParameters, &task.OutputParametersErrorRate,
-// 		&task.StartTime, &task.TaskId, &task.TimeInterval)
-
-// 	if err != nil {
-// 		if err == sql.ErrNoRows {
-// 			return nil, nil
-// 		}
-// 		return nil, err
-// 	}
-
-// 	return &task, nil
-// }
-
-// func (m *TaskLogModel) Delete(id int) error {
-// 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-// 	defer cancel()
-
-// 	query := "DELETE FROM tasks WHERE task_id = $1"
-
-// 	_, err := m.DB.ExecContext(ctx, query, id)
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	return nil
-// }
+	return taskLogs, nil
+}

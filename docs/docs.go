@@ -144,6 +144,38 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/tasks/GetTaskDetail/{task_id}": {
+            "get": {
+                "description": "returns the details of a task",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "tasks"
+                ],
+                "summary": "returns the details of a task",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Task ID",
+                        "name": "task_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/main.TaskDetailOutputModel"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/tasks/create": {
             "post": {
                 "description": "Creates a new task",
@@ -470,6 +502,45 @@ const docTemplate = `{
                 }
             }
         },
+        "main.InputParameter": {
+            "type": "object",
+            "properties": {
+                "parameter_name": {
+                    "type": "string"
+                },
+                "parameter_value": {
+                    "type": "string"
+                }
+            }
+        },
+        "main.MaximumErrorRate": {
+            "type": "object",
+            "properties": {
+                "error_rate": {
+                    "type": "integer"
+                },
+                "parameter_name": {
+                    "type": "string"
+                }
+            }
+        },
+        "main.OutputParameter": {
+            "type": "object",
+            "properties": {
+                "parameter_code_name": {
+                    "type": "string"
+                },
+                "parameter_machine_value": {
+                    "type": "string"
+                },
+                "parameter_name": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "boolean"
+                }
+            }
+        },
         "main.SaveTaskResult": {
             "type": "object",
             "properties": {
@@ -481,6 +552,61 @@ const docTemplate = `{
                 },
                 "taskId": {
                     "type": "integer"
+                }
+            }
+        },
+        "main.TaskDetailOutputModel": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/main.TaskLog"
+                    }
+                },
+                "is_active": {
+                    "type": "boolean"
+                },
+                "machine_id": {
+                    "type": "integer"
+                },
+                "maximum_error_rates": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/main.MaximumErrorRate"
+                    }
+                },
+                "plugin_operating_hours": {
+                    "type": "number"
+                },
+                "system_error_percentage": {
+                    "type": "number"
+                },
+                "task_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "main.TaskLog": {
+            "type": "object",
+            "properties": {
+                "input_parameters": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/main.InputParameter"
+                    }
+                },
+                "output_parameters": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/main.OutputParameter"
+                    }
+                },
+                "run_time": {
+                    "type": "string"
                 }
             }
         },

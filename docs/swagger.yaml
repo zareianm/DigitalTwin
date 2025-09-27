@@ -17,6 +17,31 @@ definitions:
       name:
         type: string
     type: object
+  main.InputParameter:
+    properties:
+      parameter_name:
+        type: string
+      parameter_value:
+        type: string
+    type: object
+  main.MaximumErrorRate:
+    properties:
+      error_rate:
+        type: integer
+      parameter_name:
+        type: string
+    type: object
+  main.OutputParameter:
+    properties:
+      parameter_code_name:
+        type: string
+      parameter_machine_value:
+        type: string
+      parameter_name:
+        type: string
+      status:
+        type: boolean
+    type: object
   main.SaveTaskResult:
     properties:
       errors:
@@ -25,6 +50,42 @@ definitions:
         type: boolean
       taskId:
         type: integer
+    type: object
+  main.TaskDetailOutputModel:
+    properties:
+      created_at:
+        type: string
+      data:
+        items:
+          $ref: '#/definitions/main.TaskLog'
+        type: array
+      is_active:
+        type: boolean
+      machine_id:
+        type: integer
+      maximum_error_rates:
+        items:
+          $ref: '#/definitions/main.MaximumErrorRate'
+        type: array
+      plugin_operating_hours:
+        type: number
+      system_error_percentage:
+        type: number
+      task_id:
+        type: integer
+    type: object
+  main.TaskLog:
+    properties:
+      input_parameters:
+        items:
+          $ref: '#/definitions/main.InputParameter'
+        type: array
+      output_parameters:
+        items:
+          $ref: '#/definitions/main.OutputParameter'
+        type: array
+      run_time:
+        type: string
     type: object
   main.TaskOutputModel:
     properties:
@@ -127,6 +188,27 @@ paths:
       summary: Creates a new machine
       tags:
       - machines
+  /api/v1/tasks/GetTaskDetail/{task_id}:
+    get:
+      consumes:
+      - application/json
+      description: returns the details of a task
+      parameters:
+      - description: Task ID
+        in: path
+        name: task_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/main.TaskDetailOutputModel'
+      summary: returns the details of a task
+      tags:
+      - tasks
   /api/v1/tasks/create:
     post:
       consumes:

@@ -91,13 +91,14 @@ func (m *TaskModel) Get(id int) (*Task, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	query := "SELECT * FROM task WHERE task_id = $1"
+	query := "SELECT * FROM tasks WHERE task_id = $1"
 
 	var task Task
 
-	err := m.DB.QueryRowContext(ctx, query, id).Scan(&task.TaskId, &task.CreatedAt, &task.EndTime, &task.InputParameters,
-		&task.LastRun, &task.MachineId, &task.OutputParameters, &task.OutputParametersErrorRate,
-		&task.StartTime, &task.TaskId, &task.TimeInterval)
+	err := m.DB.QueryRowContext(ctx, query, id).Scan(&task.TaskId, &task.TimeInterval, &task.CreatedAt,
+		&task.LastRun, &task.StartTime, &task.EndTime, &task.MachineId,
+		pq.Array(&task.InputParameters), pq.Array(&task.OutputParameters),
+		pq.Array(&task.OutputParametersErrorRate), &task.FilePath)
 
 	if err != nil {
 		if err == sql.ErrNoRows {
