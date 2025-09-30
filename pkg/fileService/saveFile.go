@@ -1,6 +1,7 @@
 package fileService
 
 import (
+	"DigitalTwin/internal/env"
 	"errors"
 	"mime/multipart"
 	"os"
@@ -8,18 +9,11 @@ import (
 	"strings"
 
 	"github.com/google/uuid"
-	"github.com/spf13/viper"
 )
 
 func SaveFile(fh *multipart.FileHeader) (string, error) {
 
-	viper.SetConfigName("appsettings")
-	viper.SetConfigType("yaml")
-	viper.AddConfigPath(".")
-	viper.AddConfigPath("../config")
-	_ = viper.ReadInConfig()
-
-	baseUploadDir := viper.GetString("baseUploadDir")
+	baseUploadDir := env.GetEnvString("baseUploadDir", "")
 
 	baseUploadDir = filepath.Clean(baseUploadDir)
 

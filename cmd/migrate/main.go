@@ -1,6 +1,7 @@
 package main
 
 import (
+	"DigitalTwin/internal/env"
 	"database/sql"
 	"log"
 	"os"
@@ -9,7 +10,6 @@ import (
 	"github.com/golang-migrate/migrate"
 	"github.com/golang-migrate/migrate/database/postgres"
 	"github.com/golang-migrate/migrate/source/file"
-	"github.com/spf13/viper"
 )
 
 func main() {
@@ -19,13 +19,7 @@ func main() {
 
 	direction := os.Args[1]
 
-	viper.SetConfigName("appsettings")
-	viper.SetConfigType("yaml")
-	viper.AddConfigPath(".")
-	viper.AddConfigPath("../config")
-	_ = viper.ReadInConfig()
-
-	dsn := viper.GetString("databaseconnectionstring")
+	dsn := env.GetEnvString("databaseconnectionstring", "")
 
 	db, err := sql.Open("postgres", dsn)
 	if err != nil {

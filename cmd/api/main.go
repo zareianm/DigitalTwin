@@ -14,7 +14,6 @@ import (
 	_ "github.com/joho/godotenv/autoload"
 	_ "github.com/lib/pq"
 	"github.com/robfig/cron/v3"
-	"github.com/spf13/viper"
 )
 
 // @title Go Gin Rest API
@@ -34,13 +33,7 @@ type application struct {
 
 func main() {
 
-	viper.SetConfigName("appsettings")
-	viper.SetConfigType("yaml")
-	viper.AddConfigPath(".")
-	viper.AddConfigPath("../config")
-	_ = viper.ReadInConfig()
-
-	dsn := viper.GetString("databaseconnectionstring")
+	dsn := env.GetEnvString("databaseconnectionstring", "")
 
 	db, err := sql.Open("postgres", dsn)
 	if err != nil {
@@ -49,7 +42,7 @@ func main() {
 
 	defer db.Close()
 
-	baseUploadDir := viper.GetString("baseUploadDir")
+	baseUploadDir := env.GetEnvString("baseUploadDir", "")
 
 	baseUploadDir = filepath.Clean(baseUploadDir)
 

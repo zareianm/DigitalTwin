@@ -1,0 +1,40 @@
+services:
+  digital_twin_db:
+    image: postgres:16-alpine
+    container_name: digital_twin_db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: DigitalTwinDb
+    ports:
+      - "5433:5432"
+    volumes:
+      - digital_twin_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build: .
+    environment:
+      PORT: "8080"
+      JWT_SECRET: "sdsf"
+      # your code expects these exact keys:
+      databaseconnectionstring: "postgres://postgres:postgres@digital_twin_db:5432/DigitalTwinDb?sslmode=disable"
+      baseUploadDir: "/appdata/upload-files"
+      VOLUME_NAME: "digitaltwin_appdata"
+    ports:
+      - "8080:8080"
+    depends_on:
+      - digital_twin_db
+    restart: unless-stopped
+    volumes:
+      - DigitalTwin_appdata:/appdata
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /tmp:/tmp  # Add this line to share temp directory
+
+volumes:
+  digital_twin_db_data:
+  DigitalTwin_appdata:

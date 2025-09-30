@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -19,119 +20,143 @@ const (
 
 const dockerImage = "gcc:13"
 
-type runReq struct {
-	Path string   `json:"path"` // absolute path to *.cpp
-	Args []string `json:"args"`
+// GetHostPath converts container path to host path for volume mounting
+// This assumes the standard Docker volume location
+func GetHostPath(containerPath string) string {
+	// If running on Docker Desktop (Mac/Windows), paths might be different
+	// For Linux or Docker in Docker, this should work
+	if strings.HasPrefix(containerPath, "/appdata/") {
+		// Get the volume name from docker-compose
+		volumeName := os.Getenv("VOLUME_NAME")
+		if volumeName == "" {
+			// Try to auto-detect - adjust based on your setup
+			volumeName = "digitaltwin_appdata"
+		}
+
+		// Docker volumes are typically stored here on Linux
+		hostBasePath := fmt.Sprintf("/var/lib/docker/volumes/%s/_data", volumeName)
+		relativePath := strings.TrimPrefix(containerPath, "/appdata/")
+		return filepath.Join(hostBasePath, relativePath)
+	}
+	return containerPath
 }
 
 func RunCppInDocker(path string, args []string) (string, int, error) {
-
-	req := runReq{Path: path, Args: args}
-
-	// Resolve to absolute, symlink-free path
-	resolved, err := filepath.EvalSymlinks(req.Path)
+	// Create a temporary directory in /tmp (which is accessible from both container and host)
+	tempDir, err := os.MkdirTemp("/tmp", "cppbuild-")
 	if err != nil {
-		return "", -1, errors.New(fmt.Sprintf("invalid path: %v", err))
+		return "", -1, fmt.Errorf("failed to create temp directory: %v", err)
 	}
-	absPath, err := filepath.Abs(resolved)
-	if err != nil {
-		return "", -1, errors.New(fmt.Sprintf("cannot resolve path: %v", err))
-	}
+	defer os.RemoveAll(tempDir)
 
 	// Validate file
-	st, err := os.Stat(absPath)
+	st, err := os.Stat(path)
 	if err != nil || st.IsDir() {
 		return "", -1, errors.New("file does not exist or is a directory")
 	}
-	lower := strings.ToLower(absPath)
+
+	lower := strings.ToLower(path)
 	if !(strings.HasSuffix(lower, ".cpp") || strings.HasSuffix(lower, ".cc") || strings.HasSuffix(lower, ".cxx")) {
 		return "", -1, errors.New("unsupported extension; expected .cpp/.cc/.cxx")
 	}
 
-	// Separate writable build dir from source dir
-	srcDir := filepath.Dir(absPath)
-	buildDir, err := os.MkdirTemp("", "cppbuild-*")
+	// Copy source file to temp directory
+	srcFile, err := os.Open(path)
 	if err != nil {
-		return "", -1, errors.New("failed to create build directory")
+		return "", -1, fmt.Errorf("failed to open source file: %v", err)
 	}
-	defer os.RemoveAll(buildDir)
+	defer srcFile.Close()
 
-	// Compile
-	if err := dockerCompileSeparated(srcDir, absPath, buildDir); err != nil {
-		return "", -1, errors.New(fmt.Sprintf("compile failed: %v", err))
+	destPath := filepath.Join(tempDir, "source.cpp")
+	destFile, err := os.Create(destPath)
+	if err != nil {
+		return "", -1, fmt.Errorf("failed to create dest file: %v", err)
+	}
+	defer destFile.Close()
+
+	if _, err := io.Copy(destFile, srcFile); err != nil {
+		return "", -1, fmt.Errorf("failed to copy source file: %v", err)
+	}
+
+	// Compile using temp directory (which should be accessible)
+	if err := dockerCompileTemp(tempDir); err != nil {
+		return "", -1, fmt.Errorf("compile failed: %v", err)
 	}
 
 	// Run
-	stdout, _, exitCode, runErr := dockerRun(buildDir, []string{"/work/app"}, req.Args)
-
-	var errStr string
+	stdout, _, exitCode, runErr := dockerRunTemp(tempDir, args)
 	if runErr != nil {
-		errStr = runErr.Error()
-
-		return "", exitCode, errors.New(errStr)
+		return "", exitCode, runErr
 	}
 
 	return string(stdout), exitCode, nil
 }
 
-func dockerCompileSeparated(srcDir, absSource, buildDir string) error {
+func dockerCompileTemp(tempDir string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), compileTimeout)
 	defer cancel()
 
-	// Make paths Docker-friendly across OSes
-	srcBase := filepath.Base(absSource)
-
+	// Use bind mount with the temp directory
+	// /tmp should be accessible from the host
 	cmd := exec.CommandContext(
 		ctx, "docker", "run", "--rm",
-		"-v", fmt.Sprintf("%s:/src:ro", srcDir),
-		"-v", fmt.Sprintf("%s:/build", buildDir),
-		"-w", "/build",
-		dockerImage, "bash", "-lc",
-		fmt.Sprintf("g++ -std=c++17 -O2 -pipe -static-libstdc++ -static-libgcc -I/src /src/%s -o /build/app", srcBase),
+		"-v", fmt.Sprintf("%s:/work", tempDir),
+		"-w", "/work",
+		dockerImage, "bash", "-c",
+		"g++ -std=c++17 -O2 -pipe -static-libstdc++ -static-libgcc source.cpp -o app",
 	)
+
 	var stderr bytes.Buffer
 	cmd.Stderr = &stderr
+
 	if err := cmd.Run(); err != nil {
 		if ctx.Err() == context.DeadlineExceeded {
 			return ctx.Err()
 		}
 		return fmt.Errorf("%v: %s", err, stderr.String())
 	}
+
 	return nil
 }
 
-func dockerRun(workDir string, entry []string, args []string) ([]byte, []byte, int, error) {
+func dockerRunTemp(tempDir string, args []string) ([]byte, []byte, int, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), runTimeout)
 	defer cancel()
 
-	base := []string{
+	// Build the Docker command
+	dockerArgs := []string{
 		"run", "--rm",
 		"--network", "none",
 		"--pids-limit", "128",
 		"-m", "256m",
 		"--cpus", "0.5",
-		"--read-only",
 		"--security-opt", "no-new-privileges",
-		"-v", fmt.Sprintf("%s:/work:ro", workDir),
+		"-v", fmt.Sprintf("%s:/work:ro", tempDir),
 		"-w", "/work",
 		"--tmpfs", "/tmp:rw,noexec,nosuid,nodev,size=16m",
 		dockerImage,
+		"./app",
 	}
-	cmdArgs := append(base, append(entry, args...)...)
 
-	cmd := exec.CommandContext(ctx, "docker", cmdArgs...)
+	// Add user arguments
+	dockerArgs = append(dockerArgs, args...)
+
+	cmd := exec.CommandContext(ctx, "docker", dockerArgs...)
+
 	var outBuf, errBuf bytes.Buffer
 	cmd.Stdout = &outBuf
 	cmd.Stderr = &errBuf
-	runErr := cmd.Run()
 
+	runErr := cmd.Run()
 	exitCode := 0
 	var exitErr *exec.ExitError
 	if errors.As(runErr, &exitErr) {
 		exitCode = exitErr.ExitCode()
 	}
+
 	if ctx.Err() == context.DeadlineExceeded {
 		return outBuf.Bytes(), errBuf.Bytes(), exitCode, ctx.Err()
 	}
+
 	return outBuf.Bytes(), errBuf.Bytes(), exitCode, runErr
 }
