@@ -1,7 +1,6 @@
-package main
+package runMigration
 
 import (
-	"DigitalTwin/internal/env"
 	"database/sql"
 	"log"
 	"os"
@@ -12,21 +11,7 @@ import (
 	"github.com/golang-migrate/migrate/source/file"
 )
 
-func main() {
-	if len(os.Args) < 2 {
-		log.Fatal("Please provide a migration direction: 'up' or 'down'")
-	}
-
-	direction := os.Args[1]
-
-	dsn := env.GetEnvString("databaseconnectionstring", "")
-
-	db, err := sql.Open("postgres", dsn)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	defer db.Close()
+func UpdateDatabase(db *sql.DB, direction string) {
 
 	instance, err := postgres.WithInstance(db, &postgres.Config{})
 	if err != nil {

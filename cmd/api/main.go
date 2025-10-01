@@ -1,6 +1,7 @@
 package main
 
 import (
+	runMigration "DigitalTwin/cmd/migrate"
 	"DigitalTwin/internal/database"
 	"DigitalTwin/internal/env"
 	"DigitalTwin/pkg/taskService"
@@ -39,8 +40,9 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-
 	defer db.Close()
+
+	runMigration.UpdateDatabase(db, "up")
 
 	baseUploadDir := env.GetEnvString("baseUploadDir", "")
 
