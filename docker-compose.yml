@@ -26,6 +26,7 @@ services:
       baseUploadDir: "/appdata/upload-files"
       VOLUME_NAME: "digitaltwin_appdata"
       BASE_URL: "http://195.248.241.138"
+      Migrations_Path: "file://cmd/migrate/migrations"
     ports:
       - "8080:8080"
     depends_on:

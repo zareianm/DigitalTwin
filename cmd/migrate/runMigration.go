@@ -1,6 +1,7 @@
 package runMigration
 
 import (
+	"DigitalTwin/internal/env"
 	"database/sql"
 	"log"
 	"os"
@@ -18,7 +19,8 @@ func UpdateDatabase(db *sql.DB, direction string) {
 		log.Fatal(err)
 	}
 
-	fSrc, err := (&file.File{}).Open("migrations")
+	migrationPath := env.GetEnvString("Migrations_Path", "../migrate/migrations")
+	fSrc, err := (&file.File{}).Open(migrationPath)
 
 	if err != nil {
 		log.Fatal(err)
