@@ -178,7 +178,7 @@ type InputParameter struct {
 type OutputParameter struct {
 	ParameterName         string `json:"parameter_name"`
 	ParameterMachineValue string `json:"parameter_machine_value"`
-	ParameterCodeValue    string `json:"parameter_code_name"`
+	ParameterCodeValue    string `json:"parameter_code_value"`
 	Status                bool   `json:"status"`
 }
 

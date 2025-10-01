@@ -527,7 +527,7 @@ const docTemplate = `{
         "main.OutputParameter": {
             "type": "object",
             "properties": {
-                "parameter_code_name": {
+                "parameter_code_value": {
                     "type": "string"
                 },
                 "parameter_machine_value": {
