@@ -3,8 +3,10 @@ package taskService
 import (
 	"DigitalTwin/internal/database"
 	"DigitalTwin/pkg/cppService"
+	"DigitalTwin/pkg/pythonService"
 	"log"
 	"math"
+	"path/filepath"
 	"strconv"
 	"time"
 
@@ -50,8 +52,26 @@ func RunTask(t database.Task, models database.Models) {
 		return
 	}
 
-	// To Do multiple language
-	stdOut, _, err := cppService.RunCppInDocker(t.FilePath, args)
+	var stdOut string
+
+	fileExtension := GetFileExtension(t.FilePath)
+
+	switch fileExtension {
+
+	case "cpp":
+		{
+			stdOut, _, err = cppService.RunCppInDocker(t.FilePath, args)
+		}
+	case "py":
+		{
+			stdOut, _, err = pythonService.RunPythonInDocker(t.FilePath, args)
+		}
+	default:
+		{
+			return
+		}
+	}
+
 	if err != nil {
 		return
 	}
@@ -98,4 +118,12 @@ func isSafe(expectedValue, realValue float64, errorRateInPercent int64) bool {
 	diff := math.Abs(realValue-expectedValue) / expectedValue * 100
 
 	return diff <= float64(errorRateInPercent)
+}
+
+func GetFileExtension(filePath string) string {
+	ext := filepath.Ext(filePath)
+	if len(ext) > 0 {
+		return ext[1:]
+	}
+	return ""
 }

@@ -192,7 +192,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "file",
-                        "description": "C++ source file to scan",
+                        "description": "C++ or Python source file to scan",
                         "name": "file",
                         "in": "formData",
                         "required": true

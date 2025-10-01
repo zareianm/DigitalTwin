@@ -10,6 +10,7 @@ import (
 
 	"DigitalTwin/pkg/cppService"
 	"DigitalTwin/pkg/fileService"
+	"DigitalTwin/pkg/pythonService"
 	"DigitalTwin/pkg/taskService"
 
 	"github.com/gin-gonic/gin"
@@ -28,7 +29,7 @@ type SaveTaskResult struct {
 //		@Tags			tasks
 //	    @Accept       	multipart/form-data
 //		@Produce		json
-//	    @Param        	file  		formData  	file	true	"C++ source file to scan"
+//	    @Param        	file  		formData  	file	true	"C++ or Python source file to scan"
 //		@Param        	machineId  	formData  	int 	true 	"ID of the machine"
 //		@Param        	intervalTimeInMinutes     formData  	int   	true  	"interval time in minutes"
 //		@Param        	inputParameters     formData  	[]string   	true  	"input parmas"
@@ -112,8 +113,25 @@ func (app *application) createTask(c *gin.Context) {
 		return
 	}
 
-	// To Do multiple language
-	stdOut, errorStr := cppService.CheckCppError(filepath, args)
+	var stdOut, errorStr string
+
+	fileExtension := taskService.GetFileExtension(filepath)
+
+	switch fileExtension {
+
+	case "cpp":
+		{
+			stdOut, errorStr = cppService.CheckCppError(filepath, args)
+		}
+	case "py":
+		{
+			stdOut, errorStr = pythonService.CheckPythonError(filepath, args)
+		}
+	default:
+		{
+			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid file extension"})
+		}
+	}
 
 	if errorStr != "" {
 		result := SaveTaskResult{
