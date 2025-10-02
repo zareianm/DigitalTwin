@@ -223,7 +223,7 @@ const docTemplate = `{
                         "items": {
                             "type": "string"
                         },
-                        "collectionFormat": "csv",
+                        "collectionFormat": "multi",
                         "description": "input parmas",
                         "name": "inputParameters",
                         "in": "formData",

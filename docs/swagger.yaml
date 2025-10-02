@@ -227,7 +227,7 @@ paths:
         name: intervalTimeInMinutes
         required: true
         type: integer
-      - collectionFormat: csv
+      - collectionFormat: multi
         description: input parmas
         in: formData
         items:
