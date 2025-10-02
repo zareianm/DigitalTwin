@@ -52,7 +52,7 @@ func (app *application) getTaskDetail(c *gin.Context) {
 		MachineId:            task.MachineId,
 		CreatedAt:            task.CreatedAt,
 		IsActive:             task.StartTime.Before(time.Now()) && task.EndTime.After(time.Now()),
-		PluginOperatingHours: getTaskPeratingHour(*task),
+		PluginOperatingHours: getTaskOperatingHour(*task),
 		Data:                 []TaskLog{},
 		MaximumErrorRates:    []MaximumErrorRate{},
 	}
@@ -99,7 +99,7 @@ func getTaskLogs(taskLogs []*database.TaskLog, result *TaskDetailOutputModel) {
 	}
 }
 
-func getTaskPeratingHour(t database.Task) float64 {
+func getTaskOperatingHour(t database.Task) float64 {
 	now := time.Now().UTC()
 
 	var operatingHours float64

@@ -17,19 +17,13 @@ import (
 	"github.com/robfig/cron/v3"
 )
 
-// @title Go Gin Rest API
+// @title DigitalTwin API
 // @version 1.0
-// @description A rest API in Go using Gin framework
-// @securityDefinitions.apikey BearerAuth
-// @in header
-// @name Authorization
-// @description Enter your bearer token in the format **Bearer &lt;token&gt;**
 
 type application struct {
-	port      int
-	jwtSecret string
-	models    database.Models
-	cr        *cron.Cron
+	port   int
+	models database.Models
+	cr     *cron.Cron
 }
 
 func main() {
@@ -54,10 +48,9 @@ func main() {
 
 	models := database.NewModels(db)
 	app := &application{
-		port:      env.GetEnvInt("PORT", 8080),
-		jwtSecret: env.GetEnvString("JWT_SECRET", "some-secret-123456"),
-		models:    models,
-		cr:        cron.New(cron.WithSeconds()),
+		port:   env.GetEnvInt("PORT", 8080),
+		models: models,
+		cr:     cron.New(cron.WithSeconds()),
 	}
 
 	app.cr.Start()
