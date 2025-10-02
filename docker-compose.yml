@@ -25,7 +25,7 @@ services:
       databaseconnectionstring: "postgres://postgres:postgres@digital_twin_db:5432/DigitalTwinDb?sslmode=disable"
       baseUploadDir: "/appdata/upload-files"
       VOLUME_NAME: "digitaltwin_appdata"
-      BASE_URL: "http://195.248.241.138"
+      BASE_URL: "https://digitaltwin.sadegh.sbs"
       Migrations_Path: "file://cmd/migrate/migrations"
     ports:
       - "8080:8080"
