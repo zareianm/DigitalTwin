@@ -247,7 +247,7 @@ const docTemplate = `{
                     {
                         "type": "string",
                         "format": "date-time",
-                        "description": "start time in RFC3339 format (e.g. 2025-08-18T14:30:00Z)",
+                        "description": "start time in UTC and RFC3339 format (e.g. 2025-08-18T14:30:00Z)",
                         "name": "startTime",
                         "in": "formData",
                         "required": true
@@ -255,7 +255,7 @@ const docTemplate = `{
                     {
                         "type": "string",
                         "format": "date-time",
-                        "description": "start time in RFC3339 format (e.g. 2025-08-18T14:30:00Z)",
+                        "description": "end time in UTC and RFC3339 format (e.g. 2025-08-18T14:30:00Z)",
                         "name": "endTime",
                         "in": "formData",
                         "required": true
@@ -438,14 +438,6 @@ const docTemplate = `{
                 }
             }
         }
-    },
-    "securityDefinitions": {
-        "BearerAuth": {
-            "description": "Enter your bearer token in the format **Bearer \u0026lt;token\u0026gt;**",
-            "type": "apiKey",
-            "name": "Authorization",
-            "in": "header"
-        }
     }
 }`
 
@@ -455,8 +447,8 @@ var SwaggerInfo = &swag.Spec{
 	Host:             "",
 	BasePath:         "",
 	Schemes:          []string{},
-	Title:            "Go Gin Rest API",
-	Description:      "A rest API in Go using Gin framework",
+	Title:            "DigitalTwin API",
+	Description:      "",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 }

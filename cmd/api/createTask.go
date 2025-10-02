@@ -34,8 +34,8 @@ type SaveTaskResult struct {
 //		@Param        	inputParameters     formData  	[]string   	true  	"input parmas"
 //		@Param        	outputParameters     formData  	[]string   	true  	"output parmas"
 //		@Param        	outputParametersErrorRate     formData  	[]int  	 true  	"output parmas error rates"
-//		@Param    		startTime   formData  string  true  "start time in RFC3339 format (e.g. 2025-08-18T14:30:00Z)" format(date-time)
-//		@Param    		endTime     formData  string  true  "start time in RFC3339 format (e.g. 2025-08-18T14:30:00Z)" format(date-time)
+//		@Param    		startTime   formData  string  true  "start time in UTC and RFC3339 format (e.g. 2025-08-18T14:30:00Z)" format(date-time)
+//		@Param    		endTime     formData  string  true  "end time in UTC and RFC3339 format (e.g. 2025-08-18T14:30:00Z)" format(date-time)
 //		@Success		201			{object}	SaveTaskResult
 //		@Router			/api/v1/tasks/create [post]
 func (app *application) createTask(c *gin.Context) {
@@ -77,6 +77,16 @@ func (app *application) createTask(c *gin.Context) {
 	endTime, err := time.Parse(time.RFC3339, endTimeStr)
 	if err != nil {
 		c.JSON(400, gin.H{"error": "invalid endTime, must be RFC3339"})
+		return
+	}
+
+	if startTime.Before(time.Now().UTC()) {
+		c.JSON(400, gin.H{"error": "invalid start time, must be in the future"})
+		return
+	}
+
+	if endTime.Before(startTime) {
+		c.JSON(400, gin.H{"error": "invalid end time, must be greater than start time"})
 		return
 	}
 

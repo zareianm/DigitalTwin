@@ -91,8 +91,7 @@ definitions:
     type: object
 info:
   contact: {}
-  description: A rest API in Go using Gin framework
-  title: Go Gin Rest API
+  title: DigitalTwin API
   version: "1.0"
 paths:
   /api/v1/machines:
@@ -243,13 +242,13 @@ paths:
         name: outputParametersErrorRate
         required: true
         type: array
-      - description: start time in RFC3339 format (e.g. 2025-08-18T14:30:00Z)
+      - description: start time in UTC and RFC3339 format (e.g. 2025-08-18T14:30:00Z)
         format: date-time
         in: formData
         name: startTime
         required: true
         type: string
-      - description: start time in RFC3339 format (e.g. 2025-08-18T14:30:00Z)
+      - description: end time in UTC and RFC3339 format (e.g. 2025-08-18T14:30:00Z)
         format: date-time
         in: formData
         name: endTime
@@ -282,10 +281,4 @@ paths:
       summary: Returns all tasks
       tags:
       - tasks
-securityDefinitions:
-  BearerAuth:
-    description: Enter your bearer token in the format **Bearer &lt;token&gt;**
-    in: header
-    name: Authorization
-    type: apiKey
 swagger: "2.0"
