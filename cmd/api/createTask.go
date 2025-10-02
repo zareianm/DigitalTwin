@@ -29,6 +29,7 @@ type SaveTaskResult struct {
 //	    @Accept       	multipart/form-data
 //		@Produce		json
 //	    @Param        	file  		formData  	file	true	"C++ or Python source file to scan"
+//		@Param        	taskName  	formData  	string 	true 	"Name of task"
 //		@Param        	machineId  	formData  	int 	true 	"ID of the machine"
 //		@Param        	intervalTimeInMinutes     formData  	int   	true  	"interval time in minutes"
 //		@Param        	inputParameters     formData  	[]string   	true  	"input parmas"
@@ -53,6 +54,8 @@ func (app *application) createTask(c *gin.Context) {
 		c.JSON(400, gin.H{"error": "invalid machineId"})
 		return
 	}
+
+	taskName := c.PostForm("taskName")
 
 	intervalTimeInMinutes, err := strconv.Atoi(c.PostForm("intervalTimeInMinutes"))
 	if err != nil {
@@ -163,6 +166,7 @@ func (app *application) createTask(c *gin.Context) {
 		OutputParameters:          outputParams,
 		OutputParametersErrorRate: outputErrorRates,
 		FilePath:                  filepath,
+		TaskName:                  taskName,
 	}
 
 	err = app.models.Tasks.Insert(&task)

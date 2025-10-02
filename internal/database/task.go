@@ -24,15 +24,16 @@ type Task struct {
 	OutputParameters          []string   `json:"output_parameters"`
 	OutputParametersErrorRate []int64    `json:"output_parameters_error_rate"`
 	FilePath                  string     `json:"file_path"`
+	TaskName                  string     `json:"task_name"`
 }
 
 func (m *TaskModel) Insert(task *Task) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	query := `INSERT INTO tasks(machine_id, time_interval, created_at, start_time, end_time, input_parameters, output_parameters, output_parameters_error_rate, file_path) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING task_id`
+	query := `INSERT INTO tasks(machine_id, time_interval, created_at, start_time, end_time, input_parameters, output_parameters, output_parameters_error_rate, file_path, task_name) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING task_id`
 
-	return m.DB.QueryRowContext(ctx, query, task.MachineId, task.TimeInterval, task.CreatedAt, task.StartTime, task.EndTime, pq.Array(task.InputParameters), pq.Array(task.OutputParameters), pq.Array(task.OutputParametersErrorRate), task.FilePath).Scan(&task.TaskId)
+	return m.DB.QueryRowContext(ctx, query, task.MachineId, task.TimeInterval, task.CreatedAt, task.StartTime, task.EndTime, pq.Array(task.InputParameters), pq.Array(task.OutputParameters), pq.Array(task.OutputParametersErrorRate), task.FilePath, task.TaskName).Scan(&task.TaskId)
 }
 
 func (m *TaskModel) UpdateLastExecute(task *Task) error {
@@ -70,7 +71,7 @@ func (m *TaskModel) GetAll() ([]*Task, error) {
 
 		err := rows.Scan(&task.TaskId, &task.TimeInterval, &task.CreatedAt, &task.LastRun,
 			&task.StartTime, &task.EndTime, &task.MachineId, pq.Array(&task.InputParameters),
-			pq.Array(&task.OutputParameters), pq.Array(&task.OutputParametersErrorRate), &task.FilePath)
+			pq.Array(&task.OutputParameters), pq.Array(&task.OutputParametersErrorRate), &task.FilePath, &task.TaskName)
 
 		if err != nil {
 			return nil, err
@@ -98,7 +99,7 @@ func (m *TaskModel) Get(id int) (*Task, error) {
 	err := m.DB.QueryRowContext(ctx, query, id).Scan(&task.TaskId, &task.TimeInterval, &task.CreatedAt,
 		&task.LastRun, &task.StartTime, &task.EndTime, &task.MachineId,
 		pq.Array(&task.InputParameters), pq.Array(&task.OutputParameters),
-		pq.Array(&task.OutputParametersErrorRate), &task.FilePath)
+		pq.Array(&task.OutputParametersErrorRate), &task.FilePath, &task.TaskName)
 
 	if err != nil {
 		if err == sql.ErrNoRows {

@@ -55,6 +55,7 @@ func (app *application) getTaskDetail(c *gin.Context) {
 		PluginOperatingHours: getTaskOperatingHour(*task),
 		Data:                 []TaskLog{},
 		MaximumErrorRates:    []MaximumErrorRate{},
+		TaskName:             task.TaskName,
 	}
 
 	getTaskLogs(taskLogs, &result)
@@ -162,6 +163,7 @@ type TaskDetailOutputModel struct {
 	Data                  []TaskLog          `json:"data"`
 	MaximumErrorRates     []MaximumErrorRate `json:"maximum_error_rates"`
 	SystemErrorPercentage float64            `json:"system_error_percentage"`
+	TaskName              string             `json:"taskName"`
 }
 
 type TaskLog struct {
