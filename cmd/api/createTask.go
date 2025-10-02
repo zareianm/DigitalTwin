@@ -17,9 +17,8 @@ import (
 )
 
 type SaveTaskResult struct {
-	TaskId  int    `json:"taskId"`
-	Error   string `json:"errors"`
-	Success bool   `json:"success"`
+	TaskId int    `json:"taskId"`
+	Error  string `json:"errors"`
 }
 
 // CreateTask creates a new task
@@ -134,11 +133,7 @@ func (app *application) createTask(c *gin.Context) {
 	}
 
 	if errorStr != "" {
-		result := SaveTaskResult{
-			Error:   errorStr,
-			Success: false,
-		}
-		c.JSON(http.StatusOK, result)
+		c.JSON(http.StatusBadRequest, gin.H{"error": errorStr})
 		return
 	}
 
@@ -163,21 +158,15 @@ func (app *application) createTask(c *gin.Context) {
 	err = app.models.Tasks.Insert(&task)
 
 	if err != nil {
-		result := SaveTaskResult{
-			Error:   err.Error(),
-			Success: true,
-			TaskId:  task.TaskId,
-		}
-		c.JSON(http.StatusOK, result)
+		c.JSON(http.StatusInternalServerError, err.Error())
 		return
 
 	}
 	taskService.RegisterTask(task, app.cr, app.models)
 
 	result := SaveTaskResult{
-		Error:   "",
-		Success: true,
-		TaskId:  task.TaskId,
+		Error:  "",
+		TaskId: task.TaskId,
 	}
 
 	c.JSON(http.StatusOK, result)

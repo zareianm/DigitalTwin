@@ -358,9 +358,6 @@ const docTemplate = `{
                 "errors": {
                     "type": "string"
                 },
-                "success": {
-                    "type": "boolean"
-                },
                 "taskId": {
                     "type": "integer"
                 }
