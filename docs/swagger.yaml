@@ -10,25 +10,25 @@ definitions:
     type: object
   main.InputParameter:
     properties:
-      parameter_name:
+      parameterName:
         type: string
-      parameter_value:
+      parameterValue:
         type: string
     type: object
   main.MaximumErrorRate:
     properties:
-      error_rate:
+      errorRate:
         type: integer
-      parameter_name:
+      parameterName:
         type: string
     type: object
   main.OutputParameter:
     properties:
-      parameter_code_value:
+      parameterCodeValue:
         type: string
-      parameter_machine_value:
+      parameterMachineValue:
         type: string
-      parameter_name:
+      parameterName:
         type: string
       status:
         type: boolean
@@ -42,52 +42,56 @@ definitions:
     type: object
   main.TaskDetailOutputModel:
     properties:
-      created_at:
+      createdAt:
         type: string
       data:
         items:
           $ref: '#/definitions/main.TaskLog'
         type: array
-      is_active:
+      isActive:
         type: boolean
-      machine_id:
+      machineId:
         type: integer
-      maximum_error_rates:
+      maximumErrorRates:
         items:
           $ref: '#/definitions/main.MaximumErrorRate'
         type: array
-      plugin_operating_hours:
+      pluginOperatingHours:
         type: number
-      system_error_percentage:
+      systemErrorPercentage:
         type: number
-      task_id:
+      taskId:
         type: integer
+      taskName:
+        type: string
     type: object
   main.TaskLog:
     properties:
-      input_parameters:
+      inputParameters:
         items:
           $ref: '#/definitions/main.InputParameter'
         type: array
-      output_parameters:
+      outputParameters:
         items:
           $ref: '#/definitions/main.OutputParameter'
         type: array
-      run_time:
+      runTime:
         type: string
     type: object
   main.TaskOutputModel:
     properties:
-      created_at:
+      createdAt:
         type: string
-      is_active:
+      isActive:
         type: boolean
-      machine_id:
+      machineId:
         type: integer
-      plugin_operating_hours:
+      pluginOperatingHours:
         type: number
-      task_id:
+      taskId:
         type: integer
+      taskName:
+        type: string
     type: object
 info:
   contact: {}
@@ -208,6 +212,11 @@ paths:
         name: file
         required: true
         type: file
+      - description: Name of task
+        in: formData
+        name: taskName
+        required: true
+        type: string
       - description: ID of the machine
         in: formData
         name: machineId

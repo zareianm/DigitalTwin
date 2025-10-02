@@ -155,36 +155,36 @@ func calculateSystemErrorPercentage(result *TaskDetailOutputModel) {
 }
 
 type TaskDetailOutputModel struct {
-	TaskId                int                `json:"task_id"`
-	MachineId             int                `json:"machine_id"`
-	CreatedAt             time.Time          `json:"created_at"`
-	IsActive              bool               `json:"is_active"`
-	PluginOperatingHours  float64            `json:"plugin_operating_hours"`
+	TaskId                int                `json:"taskId"`
+	MachineId             int                `json:"machineId"`
+	CreatedAt             time.Time          `json:"createdAt"`
+	IsActive              bool               `json:"isActive"`
+	PluginOperatingHours  float64            `json:"pluginOperatingHours"`
 	Data                  []TaskLog          `json:"data"`
-	MaximumErrorRates     []MaximumErrorRate `json:"maximum_error_rates"`
-	SystemErrorPercentage float64            `json:"system_error_percentage"`
+	MaximumErrorRates     []MaximumErrorRate `json:"maximumErrorRates"`
+	SystemErrorPercentage float64            `json:"systemErrorPercentage"`
 	TaskName              string             `json:"taskName"`
 }
 
 type TaskLog struct {
-	RunTime          time.Time         `json:"run_time"`
-	InputParameters  []InputParameter  `json:"input_parameters"`
-	OutputParameters []OutputParameter `json:"output_parameters"`
+	RunTime          time.Time         `json:"runTime"`
+	InputParameters  []InputParameter  `json:"inputParameters"`
+	OutputParameters []OutputParameter `json:"outputParameters"`
 }
 
 type InputParameter struct {
-	ParameterName  string `json:"parameter_name"`
-	ParameterValue string `json:"parameter_value"`
+	ParameterName  string `json:"parameterName"`
+	ParameterValue string `json:"parameterValue"`
 }
 
 type OutputParameter struct {
-	ParameterName         string `json:"parameter_name"`
-	ParameterMachineValue string `json:"parameter_machine_value"`
-	ParameterCodeValue    string `json:"parameter_code_value"`
+	ParameterName         string `json:"parameterName"`
+	ParameterMachineValue string `json:"parameterMachineValue"`
+	ParameterCodeValue    string `json:"parameterCodeValue"`
 	Status                bool   `json:"status"`
 }
 
 type MaximumErrorRate struct {
-	ParameterName string `json:"parameter_name"`
-	ErrorRate     int64  `json:"error_rate"`
+	ParameterName string `json:"parameterName"`
+	ErrorRate     int64  `json:"errorRate"`
 }

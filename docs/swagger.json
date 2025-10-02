@@ -189,6 +189,13 @@
                         "required": true
                     },
                     {
+                        "type": "string",
+                        "description": "Name of task",
+                        "name": "taskName",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
                         "type": "integer",
                         "description": "ID of the machine",
                         "name": "machineId",
@@ -307,10 +314,10 @@
         "main.InputParameter": {
             "type": "object",
             "properties": {
-                "parameter_name": {
+                "parameterName": {
                     "type": "string"
                 },
-                "parameter_value": {
+                "parameterValue": {
                     "type": "string"
                 }
             }
@@ -318,10 +325,10 @@
         "main.MaximumErrorRate": {
             "type": "object",
             "properties": {
-                "error_rate": {
+                "errorRate": {
                     "type": "integer"
                 },
-                "parameter_name": {
+                "parameterName": {
                     "type": "string"
                 }
             }
@@ -329,13 +336,13 @@
         "main.OutputParameter": {
             "type": "object",
             "properties": {
-                "parameter_code_value": {
+                "parameterCodeValue": {
                     "type": "string"
                 },
-                "parameter_machine_value": {
+                "parameterMachineValue": {
                     "type": "string"
                 },
-                "parameter_name": {
+                "parameterName": {
                     "type": "string"
                 },
                 "status": {
@@ -357,7 +364,7 @@
         "main.TaskDetailOutputModel": {
             "type": "object",
             "properties": {
-                "created_at": {
+                "createdAt": {
                     "type": "string"
                 },
                 "data": {
@@ -366,45 +373,48 @@
                         "$ref": "#/definitions/main.TaskLog"
                     }
                 },
-                "is_active": {
+                "isActive": {
                     "type": "boolean"
                 },
-                "machine_id": {
+                "machineId": {
                     "type": "integer"
                 },
-                "maximum_error_rates": {
+                "maximumErrorRates": {
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/main.MaximumErrorRate"
                     }
                 },
-                "plugin_operating_hours": {
+                "pluginOperatingHours": {
                     "type": "number"
                 },
-                "system_error_percentage": {
+                "systemErrorPercentage": {
                     "type": "number"
                 },
-                "task_id": {
+                "taskId": {
                     "type": "integer"
+                },
+                "taskName": {
+                    "type": "string"
                 }
             }
         },
         "main.TaskLog": {
             "type": "object",
             "properties": {
-                "input_parameters": {
+                "inputParameters": {
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/main.InputParameter"
                     }
                 },
-                "output_parameters": {
+                "outputParameters": {
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/main.OutputParameter"
                     }
                 },
-                "run_time": {
+                "runTime": {
                     "type": "string"
                 }
             }
@@ -412,20 +422,23 @@
         "main.TaskOutputModel": {
             "type": "object",
             "properties": {
-                "created_at": {
+                "createdAt": {
                     "type": "string"
                 },
-                "is_active": {
+                "isActive": {
                     "type": "boolean"
                 },
-                "machine_id": {
+                "machineId": {
                     "type": "integer"
                 },
-                "plugin_operating_hours": {
+                "pluginOperatingHours": {
                     "type": "number"
                 },
-                "task_id": {
+                "taskId": {
                     "type": "integer"
+                },
+                "taskName": {
+                    "type": "string"
                 }
             }
         }
