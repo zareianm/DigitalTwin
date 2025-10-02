@@ -234,7 +234,7 @@ const docTemplate = `{
                         "items": {
                             "type": "string"
                         },
-                        "collectionFormat": "csv",
+                        "collectionFormat": "multi",
                         "description": "output parmas",
                         "name": "outputParameters",
                         "in": "formData",
@@ -245,7 +245,7 @@ const docTemplate = `{
                         "items": {
                             "type": "integer"
                         },
-                        "collectionFormat": "csv",
+                        "collectionFormat": "multi",
                         "description": "output parmas error rates",
                         "name": "outputParametersErrorRate",
                         "in": "formData",

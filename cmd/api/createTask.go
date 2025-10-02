@@ -30,15 +30,15 @@ type SaveTaskResult struct {
 //		@Tags			tasks
 //	    @Accept       	multipart/form-data
 //		@Produce		json
-//	    @Param        	file  		formData  	file	true	"C++ or Python or Java or Javascript source file to scan"
-//		@Param        	taskName  	formData  	string 	true 	"Name of task"
-//		@Param        	machineId  	formData  	int 	true 	"ID of the machine"
-//		@Param        	intervalTimeInMinutes     formData  	int   	true  	"interval time in minutes"
-//		@Param        	inputParameters     formData  	[]string   	true  	"input parmas" collectionFormat(multi)
-//		@Param        	outputParameters     formData  	[]string   	true  	"output parmas" collectionFormat(multi)
-//		@Param        	outputParametersErrorRate     formData  	[]int  	 true  	"output parmas error rates" collectionFormat(multi)
-//		@Param    		startTime   formData  string  true  "start time in UTC and RFC3339 format (e.g. 2025-08-18T14:30:00Z)" format(date-time)
-//		@Param    		endTime     formData  string  true  "end time in UTC and RFC3339 format (e.g. 2025-08-18T14:30:00Z)" format(date-time)
+//	    @Param        	file  					  formData  	file		true	"C++ or Python or Java or Javascript source file to scan"
+//		@Param        	taskName  				  formData  	string 		true 	"Name of task"
+//		@Param        	machineId  				  formData  	int 		true 	"ID of the machine"
+//		@Param        	intervalTimeInMinutes     formData  	int   		true  	"interval time in minutes"
+//		@Param        	inputParameters     	  formData  	[]string   	true  	"input parmas" collectionFormat(multi)
+//		@Param        	outputParameters          formData  	[]string   	true  	"output parmas" collectionFormat(multi)
+//		@Param        	outputParametersErrorRate formData  	[]int  	 	true  	"output parmas error rates" collectionFormat(multi)
+//		@Param    		startTime   			  formData      string  	true    "start time in UTC and RFC3339 format (e.g. 2025-08-18T14:30:00Z)" format(date-time)
+//		@Param    		endTime     			  formData  	string      true    "end time in UTC and RFC3339 format (e.g. 2025-08-18T14:30:00Z)" format(date-time)
 //		@Success		201			{object}	SaveTaskResult
 //		@Router			/api/v1/tasks/create [post]
 func (app *application) createTask(c *gin.Context) {
