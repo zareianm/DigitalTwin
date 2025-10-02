@@ -10,6 +10,7 @@ import (
 
 	"DigitalTwin/pkg/cppService"
 	"DigitalTwin/pkg/fileService"
+	"DigitalTwin/pkg/javaService"
 	"DigitalTwin/pkg/pythonService"
 	"DigitalTwin/pkg/taskService"
 
@@ -138,6 +139,10 @@ func (app *application) createTask(c *gin.Context) {
 	case "py":
 		{
 			stdOut, errorStr = pythonService.CheckPythonError(filepath, args)
+		}
+	case "java":
+		{
+			stdOut, errorStr = javaService.CheckJavaError(filepath, args)
 		}
 	default:
 		{

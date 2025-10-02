@@ -3,6 +3,7 @@ package taskService
 import (
 	"DigitalTwin/internal/database"
 	"DigitalTwin/pkg/cppService"
+	"DigitalTwin/pkg/javaService"
 	"DigitalTwin/pkg/pythonService"
 	"log"
 	"math"
@@ -65,6 +66,10 @@ func RunTask(t database.Task, models database.Models) {
 	case "py":
 		{
 			stdOut, _, err = pythonService.RunPythonInDocker(t.FilePath, args)
+		}
+	case "java":
+		{
+			stdOut, _, err = javaService.RunJavaInDocker(t.FilePath, args)
 		}
 	default:
 		{
