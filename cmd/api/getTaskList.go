@@ -38,6 +38,10 @@ func (app *application) getAllTasks(c *gin.Context) {
 			operatingHours = now.Sub(t.StartTime).Hours()
 		}
 
+		if operatingHours < 0 {
+			operatingHours = 0
+		}
+
 		output[i] = TaskOutputModel{
 			TaskId:               t.TaskId,
 			MachineId:            t.MachineId,

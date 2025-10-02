@@ -1,4 +1,4 @@
-package cppService
+package jsService
 
 import (
 	"bytes"
@@ -14,15 +14,14 @@ import (
 )
 
 const (
-	compileTimeout = 200 * time.Second
-	runTimeout     = 200 * time.Second
+	runTimeout = 200 * time.Second
 )
 
-const dockerImage = "gcc:13"
+const dockerImage = "node:20-slim"
 
-func RunCppInDocker(path string, args []string) (string, int, error) {
+func RunJsInDocker(path string, args []string) (string, int, error) {
 	// Create a temporary directory in /tmp (which is accessible from both container and host)
-	tempDir, err := os.MkdirTemp("/tmp", "cppbuild-")
+	tempDir, err := os.MkdirTemp("/tmp", "jsbuild-")
 	if err != nil {
 		return "", -1, fmt.Errorf("failed to create temp directory: %v", err)
 	}
@@ -35,8 +34,8 @@ func RunCppInDocker(path string, args []string) (string, int, error) {
 	}
 
 	lower := strings.ToLower(path)
-	if !(strings.HasSuffix(lower, ".cpp") || strings.HasSuffix(lower, ".cc") || strings.HasSuffix(lower, ".cxx")) {
-		return "", -1, errors.New("unsupported extension; expected .cpp/.cc/.cxx")
+	if !strings.HasSuffix(lower, ".js") && !strings.HasSuffix(lower, ".mjs") {
+		return "", -1, errors.New("unsupported extension; expected .js or .mjs")
 	}
 
 	// Copy source file to temp directory
@@ -46,7 +45,7 @@ func RunCppInDocker(path string, args []string) (string, int, error) {
 	}
 	defer srcFile.Close()
 
-	destPath := filepath.Join(tempDir, "source.cpp")
+	destPath := filepath.Join(tempDir, "script.js")
 	destFile, err := os.Create(destPath)
 	if err != nil {
 		return "", -1, fmt.Errorf("failed to create dest file: %v", err)
@@ -57,45 +56,13 @@ func RunCppInDocker(path string, args []string) (string, int, error) {
 		return "", -1, fmt.Errorf("failed to copy source file: %v", err)
 	}
 
-	// Compile using temp directory (which should be accessible)
-	if err := dockerCompileTemp(tempDir); err != nil {
-		return "", -1, fmt.Errorf("compile failed: %v", err)
-	}
-
-	// Run
+	// Run JavaScript file
 	stdout, _, exitCode, runErr := dockerRunTemp(tempDir, args)
 	if runErr != nil {
 		return "", exitCode, runErr
 	}
 
 	return string(stdout), exitCode, nil
-}
-
-func dockerCompileTemp(tempDir string) error {
-	ctx, cancel := context.WithTimeout(context.Background(), compileTimeout)
-	defer cancel()
-
-	// Use bind mount with the temp directory
-	// /tmp should be accessible from the host
-	cmd := exec.CommandContext(
-		ctx, "docker", "run", "--rm",
-		"-v", fmt.Sprintf("%s:/work", tempDir),
-		"-w", "/work",
-		dockerImage, "bash", "-c",
-		"g++ -std=c++17 -O2 -pipe -static-libstdc++ -static-libgcc source.cpp -o app",
-	)
-
-	var stderr bytes.Buffer
-	cmd.Stderr = &stderr
-
-	if err := cmd.Run(); err != nil {
-		if ctx.Err() == context.DeadlineExceeded {
-			return ctx.Err()
-		}
-		return fmt.Errorf("%v: %s", err, stderr.String())
-	}
-
-	return nil
 }
 
 func dockerRunTemp(tempDir string, args []string) ([]byte, []byte, int, error) {
@@ -114,7 +81,12 @@ func dockerRunTemp(tempDir string, args []string) ([]byte, []byte, int, error) {
 		"-w", "/work",
 		"--tmpfs", "/tmp:rw,noexec,nosuid,nodev,size=16m",
 		dockerImage,
-		"./app",
+		"node",
+		// Security flags for Node.js
+		"--max-old-space-size=128", // Limit heap to 128MB
+		"--no-warnings",
+		"--disallow-code-generation-from-strings", // Disable eval and Function constructor
+		"script.js",
 	}
 
 	// Add user arguments
@@ -128,6 +100,7 @@ func dockerRunTemp(tempDir string, args []string) ([]byte, []byte, int, error) {
 
 	runErr := cmd.Run()
 	exitCode := 0
+
 	var exitErr *exec.ExitError
 	if errors.As(runErr, &exitErr) {
 		exitCode = exitErr.ExitCode()

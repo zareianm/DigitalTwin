@@ -110,6 +110,10 @@ func getTaskOperatingHour(t database.Task) float64 {
 		operatingHours = now.Sub(t.StartTime).Hours()
 	}
 
+	if operatingHours < 0 {
+		return 0
+	}
+
 	return operatingHours
 }
 

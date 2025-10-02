@@ -11,6 +11,7 @@ import (
 	"DigitalTwin/pkg/cppService"
 	"DigitalTwin/pkg/fileService"
 	"DigitalTwin/pkg/javaService"
+	"DigitalTwin/pkg/jsService"
 	"DigitalTwin/pkg/pythonService"
 	"DigitalTwin/pkg/taskService"
 
@@ -29,7 +30,7 @@ type SaveTaskResult struct {
 //		@Tags			tasks
 //	    @Accept       	multipart/form-data
 //		@Produce		json
-//	    @Param        	file  		formData  	file	true	"C++ or Python source file to scan"
+//	    @Param        	file  		formData  	file	true	"C++ or Python or Java or Javascript source file to scan"
 //		@Param        	taskName  	formData  	string 	true 	"Name of task"
 //		@Param        	machineId  	formData  	int 	true 	"ID of the machine"
 //		@Param        	intervalTimeInMinutes     formData  	int   	true  	"interval time in minutes"
@@ -109,6 +110,11 @@ func (app *application) createTask(c *gin.Context) {
 
 	machine, err := app.models.Machines.Get(machineId)
 	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retreive machine"})
+		return
+	}
+
+	if machine == nil {
 		c.JSON(404, gin.H{"error": "invalid machineId"})
 		return
 	}
@@ -143,6 +149,10 @@ func (app *application) createTask(c *gin.Context) {
 	case "java":
 		{
 			stdOut, errorStr = javaService.CheckJavaError(filepath, args)
+		}
+	case "js":
+		{
+			stdOut, errorStr = jsService.CheckJsError(filepath, args)
 		}
 	default:
 		{

@@ -4,6 +4,7 @@ import (
 	"DigitalTwin/internal/database"
 	"DigitalTwin/pkg/cppService"
 	"DigitalTwin/pkg/javaService"
+	"DigitalTwin/pkg/jsService"
 	"DigitalTwin/pkg/pythonService"
 	"log"
 	"math"
@@ -70,6 +71,10 @@ func RunTask(t database.Task, models database.Models) {
 	case "java":
 		{
 			stdOut, _, err = javaService.RunJavaInDocker(t.FilePath, args)
+		}
+	case "js":
+		{
+			stdOut, _, err = jsService.RunJsInDocker(t.FilePath, args)
 		}
 	default:
 		{

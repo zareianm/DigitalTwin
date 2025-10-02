@@ -20,26 +20,6 @@ const (
 
 const dockerImage = "python:3.11-slim"
 
-// GetHostPath converts container path to host path for volume mounting
-// This assumes the standard Docker volume location
-func GetHostPath(containerPath string) string {
-	// If running on Docker Desktop (Mac/Windows), paths might be different
-	// For Linux or Docker in Docker, this should work
-	if strings.HasPrefix(containerPath, "/appdata/") {
-		// Get the volume name from docker-compose
-		volumeName := os.Getenv("VOLUME_NAME")
-		if volumeName == "" {
-			// Try to auto-detect - adjust based on your setup
-			volumeName = "digitaltwin_appdata"
-		}
-		// Docker volumes are typically stored here on Linux
-		hostBasePath := fmt.Sprintf("/var/lib/docker/volumes/%s/_data", volumeName)
-		relativePath := strings.TrimPrefix(containerPath, "/appdata/")
-		return filepath.Join(hostBasePath, relativePath)
-	}
-	return containerPath
-}
-
 func RunPythonInDocker(path string, args []string) (string, int, error) {
 	// Create a temporary directory in /tmp (which is accessible from both container and host)
 	tempDir, err := os.MkdirTemp("/tmp", "pybuild-")

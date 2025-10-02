@@ -207,7 +207,7 @@ paths:
       - multipart/form-data
       description: Creates a new task
       parameters:
-      - description: C++ or Python source file to scan
+      - description: C++ or Python or Java or Javascript source file to scan
         in: formData
         name: file
         required: true
