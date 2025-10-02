@@ -4,10 +4,10 @@ services:
     container_name: digital_twin_db
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_PASSWORD: uR9eZ7p!xK2dN4
       POSTGRES_DB: DigitalTwinDb
     ports:
-      - "5433:5432"
+      - "5432:5432"
     volumes:
       - digital_twin_db_data:/var/lib/postgresql/data
     healthcheck:
@@ -22,7 +22,7 @@ services:
       PORT: "8080"
       JWT_SECRET: "sdsf"
       # your code expects these exact keys:
-      databaseconnectionstring: "postgres://postgres:postgres@digital_twin_db:5432/DigitalTwinDb?sslmode=disable"
+      databaseconnectionstring: "postgres://postgres:uR9eZ7p!xK2dN4@digital_twin_db:5432/DigitalTwinDb?sslmode=disable"
       baseUploadDir: "/appdata/upload-files"
       VOLUME_NAME: "digitaltwin_appdata"
       BASE_URL: "https://digitaltwin.sadegh.sbs"
