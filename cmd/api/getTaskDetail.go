@@ -20,6 +20,7 @@ import (
 //	@Param			task_id	path		int	true	"Task ID"
 //	@Success		200	{object} TaskDetailOutputModel
 //	@Router			/api/v1/tasks/GetTaskDetail/{task_id} [get]
+//	@Security		BearerAuth
 func (app *application) getTaskDetail(c *gin.Context) {
 	taskId, err := strconv.Atoi(c.Param("task_id"))
 

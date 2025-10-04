@@ -12,6 +12,7 @@ import (
 
 	_ "DigitalTwin/docs"
 
+	"github.com/joho/godotenv"
 	_ "github.com/joho/godotenv/autoload"
 	_ "github.com/lib/pq"
 	"github.com/robfig/cron/v3"
@@ -19,7 +20,10 @@ import (
 
 // @title DigitalTwin API
 // @version 1.0
-
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
+// @description Enter your bearer token in the format **Bearer &lt;token&gt;**
 type application struct {
 	port   int
 	models database.Models
@@ -27,6 +31,11 @@ type application struct {
 }
 
 func main() {
+
+	err := godotenv.Load("../../.env")
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
 
 	dsn := env.GetEnvString("databaseconnectionstring", "")
 

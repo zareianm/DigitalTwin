@@ -16,6 +16,7 @@ import (
 //	@Produce		json
 //	@Success		200		{object}	[]TaskOutputModel
 //	@Router			/api/v1/tasks/getTaskList [get]
+//	@Security		BearerAuth
 func (app *application) getAllTasks(c *gin.Context) {
 
 	tasks, err := app.models.Tasks.GetAll()

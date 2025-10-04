@@ -1,6 +1,7 @@
 package main
 
 import (
+	auth "DigitalTwin/cmd/api/authMiddleware"
 	"DigitalTwin/internal/env"
 	"net/http"
 	"time"
@@ -23,7 +24,7 @@ func (app *application) routes() http.Handler {
 	}
 	g.Use(cors.New(config))
 
-	v1 := g.Group("/api/v1")
+	v1 := g.Group("/api/v1", auth.AuthUnsafe())
 	{
 		v1.GET("/machines", app.getAllMachines)
 		v1.GET("/machines/:id", app.getMachine)

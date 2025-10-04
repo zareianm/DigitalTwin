@@ -17,6 +17,11 @@ const docTemplate = `{
     "paths": {
         "/api/v1/machines": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Returns all machines",
                 "consumes": [
                     "application/json"
@@ -82,6 +87,11 @@ const docTemplate = `{
         },
         "/api/v1/machines/{id}": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Returns a single machine",
                 "consumes": [
                     "application/json"
@@ -146,6 +156,11 @@ const docTemplate = `{
         },
         "/api/v1/tasks/GetTaskDetail/{task_id}": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "returns the details of a task",
                 "consumes": [
                     "application/json"
@@ -178,6 +193,11 @@ const docTemplate = `{
         },
         "/api/v1/tasks/create": {
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Creates a new task",
                 "consumes": [
                     "multipart/form-data"
@@ -280,6 +300,11 @@ const docTemplate = `{
         },
         "/api/v1/tasks/getTaskList": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Returns all tasks",
                 "consumes": [
                     "application/json"
@@ -450,6 +475,14 @@ const docTemplate = `{
                     "type": "string"
                 }
             }
+        }
+    },
+    "securityDefinitions": {
+        "BearerAuth": {
+            "description": "Enter your bearer token in the format **Bearer \u0026lt;token\u0026gt;**",
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
         }
     }
 }`

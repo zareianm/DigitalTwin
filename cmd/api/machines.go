@@ -18,6 +18,7 @@ import (
 //	@Produce		json
 //	@Success		200		{object}	[]database.Machine
 //	@Router			/api/v1/machines [get]
+//	@Security		BearerAuth
 func (app *application) getAllMachines(c *gin.Context) {
 	machines, err := app.models.Machines.GetAll()
 
@@ -39,6 +40,7 @@ func (app *application) getAllMachines(c *gin.Context) {
 //	@Param			id	path		int	true	"Machine ID"
 //	@Success		200	{object}	database.Machine
 //	@Router			/api/v1/machines/{id} [get]
+//	@Security		BearerAuth
 func (app *application) getMachine(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 
