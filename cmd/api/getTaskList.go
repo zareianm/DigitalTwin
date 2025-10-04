@@ -19,7 +19,10 @@ import (
 //	@Security		BearerAuth
 func (app *application) getAllTasks(c *gin.Context) {
 
-	tasks, err := app.models.Tasks.GetAll()
+	userIdStr, _ := c.Get("user_id")
+	userId, _ := userIdStr.(int)
+
+	tasks, err := app.models.Tasks.GetAllUserTask(userId)
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retreive tasks"})

@@ -24,12 +24,15 @@ import (
 func (app *application) getTaskDetail(c *gin.Context) {
 	taskId, err := strconv.Atoi(c.Param("task_id"))
 
+	userIdStr, _ := c.Get("user_id")
+	userId, _ := userIdStr.(int)
+
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid task ID"})
 		return
 	}
 
-	task, err := app.models.Tasks.Get(taskId)
+	task, err := app.models.Tasks.Get(userId, taskId)
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retreive task details"})

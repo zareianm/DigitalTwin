@@ -12,7 +12,6 @@ import (
 
 	_ "DigitalTwin/docs"
 
-	"github.com/joho/godotenv"
 	_ "github.com/joho/godotenv/autoload"
 	_ "github.com/lib/pq"
 	"github.com/robfig/cron/v3"
@@ -31,11 +30,6 @@ type application struct {
 }
 
 func main() {
-
-	err := godotenv.Load("../../.env")
-	if err != nil {
-		log.Fatal("Error loading .env file")
-	}
 
 	dsn := env.GetEnvString("databaseconnectionstring", "")
 

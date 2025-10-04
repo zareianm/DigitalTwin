@@ -3,6 +3,7 @@ package database
 import (
 	"context"
 	"database/sql"
+	"strconv"
 	"time"
 
 	"github.com/lib/pq"
@@ -25,15 +26,16 @@ type Task struct {
 	OutputParametersErrorRate []int64    `json:"output_parameters_error_rate"`
 	FilePath                  string     `json:"file_path"`
 	TaskName                  string     `json:"task_name"`
+	UserId                    int        `jason:"user_id"`
 }
 
 func (m *TaskModel) Insert(task *Task) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	query := `INSERT INTO tasks(machine_id, time_interval, created_at, start_time, end_time, input_parameters, output_parameters, output_parameters_error_rate, file_path, task_name) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING task_id`
+	query := `INSERT INTO tasks(machine_id, time_interval, created_at, start_time, end_time, input_parameters, output_parameters, output_parameters_error_rate, file_path, task_name, user_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING task_id`
 
-	return m.DB.QueryRowContext(ctx, query, task.MachineId, task.TimeInterval, task.CreatedAt, task.StartTime, task.EndTime, pq.Array(task.InputParameters), pq.Array(task.OutputParameters), pq.Array(task.OutputParametersErrorRate), task.FilePath, task.TaskName).Scan(&task.TaskId)
+	return m.DB.QueryRowContext(ctx, query, task.MachineId, task.TimeInterval, task.CreatedAt, task.StartTime, task.EndTime, pq.Array(task.InputParameters), pq.Array(task.OutputParameters), pq.Array(task.OutputParametersErrorRate), task.FilePath, task.TaskName, task.UserId).Scan(&task.TaskId)
 }
 
 func (m *TaskModel) UpdateLastExecute(task *Task) error {
@@ -44,6 +46,80 @@ func (m *TaskModel) UpdateLastExecute(task *Task) error {
 
 	_, err := m.DB.ExecContext(ctx, query, time.Now().UTC(), task.TaskId)
 
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *TaskModel) GetAllUserTask(userId int) ([]*Task, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	query := "SELECT * FROM tasks WHERE user_id = " + strconv.Itoa(userId)
+
+	rows, err := m.DB.QueryContext(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	tasks := []*Task{}
+
+	for rows.Next() {
+		var task Task
+
+		err := rows.Scan(&task.TaskId, &task.TimeInterval, &task.CreatedAt, &task.LastRun,
+			&task.StartTime, &task.EndTime, &task.MachineId, pq.Array(&task.InputParameters),
+			pq.Array(&task.OutputParameters), pq.Array(&task.OutputParametersErrorRate), &task.FilePath, &task.TaskName, &task.UserId)
+
+		if err != nil {
+			return nil, err
+		}
+
+		tasks = append(tasks, &task)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return tasks, nil
+
+}
+
+func (m *TaskModel) Get(userId int, taskId int) (*Task, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	query := "SELECT * FROM tasks WHERE user_id = $1 && task_id = $2"
+
+	var task Task
+
+	err := m.DB.QueryRowContext(ctx, query, userId, taskId).Scan(&task.TaskId, &task.TimeInterval, &task.CreatedAt,
+		&task.LastRun, &task.StartTime, &task.EndTime, &task.MachineId,
+		pq.Array(&task.InputParameters), pq.Array(&task.OutputParameters),
+		pq.Array(&task.OutputParametersErrorRate), &task.FilePath, &task.TaskName, &task.UserId)
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	return &task, nil
+}
+
+func (m *TaskModel) Delete(id int) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	query := "DELETE FROM tasks WHERE task_id = $1"
+
+	_, err := m.DB.ExecContext(ctx, query, id)
 	if err != nil {
 		return err
 	}
@@ -71,7 +147,7 @@ func (m *TaskModel) GetAll() ([]*Task, error) {
 
 		err := rows.Scan(&task.TaskId, &task.TimeInterval, &task.CreatedAt, &task.LastRun,
 			&task.StartTime, &task.EndTime, &task.MachineId, pq.Array(&task.InputParameters),
-			pq.Array(&task.OutputParameters), pq.Array(&task.OutputParametersErrorRate), &task.FilePath, &task.TaskName)
+			pq.Array(&task.OutputParameters), pq.Array(&task.OutputParametersErrorRate), &task.FilePath, &task.TaskName, &task.UserId)
 
 		if err != nil {
 			return nil, err
@@ -86,41 +162,4 @@ func (m *TaskModel) GetAll() ([]*Task, error) {
 
 	return tasks, nil
 
-}
-
-func (m *TaskModel) Get(id int) (*Task, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-	defer cancel()
-
-	query := "SELECT * FROM tasks WHERE task_id = $1"
-
-	var task Task
-
-	err := m.DB.QueryRowContext(ctx, query, id).Scan(&task.TaskId, &task.TimeInterval, &task.CreatedAt,
-		&task.LastRun, &task.StartTime, &task.EndTime, &task.MachineId,
-		pq.Array(&task.InputParameters), pq.Array(&task.OutputParameters),
-		pq.Array(&task.OutputParametersErrorRate), &task.FilePath, &task.TaskName)
-
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, nil
-		}
-		return nil, err
-	}
-
-	return &task, nil
-}
-
-func (m *TaskModel) Delete(id int) error {
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-	defer cancel()
-
-	query := "DELETE FROM tasks WHERE task_id = $1"
-
-	_, err := m.DB.ExecContext(ctx, query, id)
-	if err != nil {
-		return err
-	}
-
-	return nil
 }

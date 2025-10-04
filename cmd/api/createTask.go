@@ -44,6 +44,9 @@ type SaveTaskResult struct {
 //	        @Security		BearerAuth
 func (app *application) createTask(c *gin.Context) {
 
+	userIdStr, _ := c.Get("user_id")
+	userId, _ := userIdStr.(int)
+
 	// 1) get file
 	f, header, err := c.Request.FormFile("file")
 	if err != nil {
@@ -183,6 +186,7 @@ func (app *application) createTask(c *gin.Context) {
 		OutputParametersErrorRate: outputErrorRates,
 		FilePath:                  filepath,
 		TaskName:                  taskName,
+		UserId:                    userId,
 	}
 
 	err = app.models.Tasks.Insert(&task)
