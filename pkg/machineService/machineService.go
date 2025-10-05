@@ -83,9 +83,9 @@ type OriginalDatum struct {
 }
 
 type MachineWithData struct {
-	machine_id   int
-	machine_name string
-	Json         map[string]interface{} `json:"json"`
+	MachineId   int
+	MachineName string
+	Json        map[string]interface{} `json:"json"`
 }
 
 func GetMachineWithData(machineId int, token string) (*MachineWithData, error) {
@@ -151,9 +151,9 @@ func getLatestByDeviceId(data []OriginalDatum, deviceID int) *MachineWithData {
 	}
 
 	machineData := &MachineWithData{
-		machine_id:   latest.Device.ID,
-		machine_name: latest.Device.Name,
-		Json:         latest.JSON,
+		MachineId:   latest.Device.ID,
+		MachineName: latest.Device.Name,
+		Json:        latest.JSON,
 	}
 
 	return machineData

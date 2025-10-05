@@ -191,6 +191,7 @@ func (app *application) createTask(c *gin.Context) {
 		TaskName:                  taskName,
 		UserId:                    userId,
 		AccessToken:               accessToken.(string),
+		MachineName:               machine.MachineName,
 	}
 
 	err = app.models.Tasks.Insert(&task)

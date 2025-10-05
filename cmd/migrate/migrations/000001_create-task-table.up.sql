@@ -9,5 +9,9 @@ CREATE TABLE IF NOT EXISTS tasks (
         input_parameters TEXT[] NOT NULL DEFAULT '{}',
         output_parameters TEXT[] NOT NULL DEFAULT '{}',
         output_parameters_error_rate INTEGER[] NOT NULL DEFAULT '{}',
-        file_path TEXT NOT NULL DEFAULT ''
+        file_path TEXT NOT NULL DEFAULT '',
+        task_name TEXT DEFAULT '',
+        user_id INTEGER NOT NULL DEFAULT 0,
+        access_token TEXT DEFAULT '',
+        machine_name TEXT DEFAULT ''
         );

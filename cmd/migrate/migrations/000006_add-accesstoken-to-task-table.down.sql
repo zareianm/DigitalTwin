@@ -1,2 +1,0 @@
-ALTER TABLE tasks
-DROP COLUMN IF EXISTS access_token;

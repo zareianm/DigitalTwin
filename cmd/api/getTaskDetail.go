@@ -60,6 +60,7 @@ func (app *application) getTaskDetail(c *gin.Context) {
 		Data:                 []TaskLog{},
 		MaximumErrorRates:    []MaximumErrorRate{},
 		TaskName:             task.TaskName,
+		MachineName:          task.MachineName,
 	}
 
 	getTaskLogs(taskLogs, &result)
@@ -172,6 +173,7 @@ type TaskDetailOutputModel struct {
 	MaximumErrorRates     []MaximumErrorRate `json:"maximumErrorRates"`
 	SystemErrorPercentage float64            `json:"systemErrorPercentage"`
 	TaskName              string             `json:"taskName"`
+	MachineName           string             `json:"machineName"`
 }
 
 type TaskLog struct {
