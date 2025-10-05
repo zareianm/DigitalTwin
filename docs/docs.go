@@ -46,6 +46,46 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/machines/getMachineParameters/{machine_id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "returns machine parameters",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "machines"
+                ],
+                "summary": "returns machine parameters",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "machine ID",
+                        "name": "machine_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/tasks/GetTaskDetail/{task_id}": {
             "get": {
                 "security": [
@@ -301,6 +341,9 @@ const docTemplate = `{
                 },
                 "machineId": {
                     "type": "integer"
+                },
+                "machineName": {
+                    "type": "string"
                 },
                 "maximumErrorRates": {
                     "type": "array",
