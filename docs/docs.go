@@ -397,6 +397,9 @@ const docTemplate = `{
                 "machineId": {
                     "type": "integer"
                 },
+                "machineName": {
+                    "type": "string"
+                },
                 "pluginOperatingHours": {
                     "type": "number"
                 },

@@ -53,6 +53,7 @@ func (app *application) getAllTasks(c *gin.Context) {
 			IsActive:             t.StartTime.Before(time.Now()) && t.EndTime.After(time.Now()),
 			PluginOperatingHours: operatingHours,
 			TaskName:             t.TaskName,
+			MachineName:          t.MachineName,
 		}
 	}
 
@@ -66,4 +67,5 @@ type TaskOutputModel struct {
 	IsActive             bool      `json:"isActive"`
 	PluginOperatingHours float64   `json:"pluginOperatingHours"`
 	TaskName             string    `json:"taskName"`
+	MachineName          string    `json:"machineName"`
 }
