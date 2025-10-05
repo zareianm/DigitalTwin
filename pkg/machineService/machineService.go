@@ -20,9 +20,8 @@ type MachineListModel struct {
 	MachineName string
 }
 
-func GetAllMachines() ([]MachineListModel, error) {
+func GetAllMachines(token string) ([]MachineListModel, error) {
 	url := "https://api.metable.ir/api/device_list/"
-	token := "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzYwNTE5NDg2LCJpYXQiOjE3NTk2NTU0ODYsImp0aSI6IjQ2ZDJkYzhlNWJiYjQyMTQ5YjZmMjZiNjhjNjEwYjIzIiwidXNlcl9pZCI6MjA4fQ.oOaq_6AjfZkRW8ZL9DKqyteFLBUqSvkcCN-CjiH-9iM"
 
 	// Create HTTP request
 	req, err := http.NewRequest("GET", url, nil)
@@ -31,7 +30,7 @@ func GetAllMachines() ([]MachineListModel, error) {
 	}
 
 	req.Header.Set("Accept", "application/json")
-	req.Header.Set("Authorization", "Bearer "+token)
+	req.Header.Set("Authorization", token)
 
 	// Perform request
 	client := &http.Client{}
@@ -89,9 +88,8 @@ type MachineWithData struct {
 	Json         map[string]interface{} `json:"json"`
 }
 
-func GetMachineWithData(machineId int) (*MachineWithData, error) {
+func GetMachineWithData(machineId int, token string) (*MachineWithData, error) {
 	url := "https://api.metable.ir/api/data_list/"
-	token := "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzYwNTE5NDg2LCJpYXQiOjE3NTk2NTU0ODYsImp0aSI6IjQ2ZDJkYzhlNWJiYjQyMTQ5YjZmMjZiNjhjNjEwYjIzIiwidXNlcl9pZCI6MjA4fQ.oOaq_6AjfZkRW8ZL9DKqyteFLBUqSvkcCN-CjiH-9iM"
 
 	// Prepare the request
 	req, err := http.NewRequest("GET", url, nil)
@@ -99,7 +97,7 @@ func GetMachineWithData(machineId int) (*MachineWithData, error) {
 		panic(err)
 	}
 	req.Header.Set("Accept", "application/json")
-	req.Header.Set("Authorization", "Bearer "+token)
+	req.Header.Set("Authorization", token)
 
 	// Execute
 	client := &http.Client{}

@@ -48,6 +48,8 @@ func (app *application) createTask(c *gin.Context) {
 	userIdStr, _ := c.Get("user_id")
 	userId, _ := userIdStr.(int)
 
+	accessToken, _ := c.Get("access_token")
+
 	// 1) get file
 	f, header, err := c.Request.FormFile("file")
 	if err != nil {
@@ -113,7 +115,7 @@ func (app *application) createTask(c *gin.Context) {
 		outputErrorRates = append(outputErrorRates, int64(num))
 	}
 
-	machine, err := machineService.GetMachineWithData(machineId)
+	machine, err := machineService.GetMachineWithData(machineId, accessToken.(string))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retreive machine"})
 		return
@@ -188,6 +190,7 @@ func (app *application) createTask(c *gin.Context) {
 		FilePath:                  filepath,
 		TaskName:                  taskName,
 		UserId:                    userId,
+		AccessToken:               accessToken.(string),
 	}
 
 	err = app.models.Tasks.Insert(&task)

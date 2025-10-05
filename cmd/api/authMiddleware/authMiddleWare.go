@@ -4,13 +4,13 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
+	"net/http"
 	"strings"
-	"time"
 
 	"github.com/gin-gonic/gin"
 )
 
-type UnsafeClaims struct {
+type Claims struct {
 	TokenType string `json:"token_type"`
 	Exp       int64  `json:"exp"`
 	Iat       int64  `json:"iat"`
@@ -23,7 +23,7 @@ func decodePayloadSegment(seg string) ([]byte, error) {
 	return base64.RawURLEncoding.DecodeString(seg)
 }
 
-func parseUnsafeClaims(jwt string) (*UnsafeClaims, error) {
+func parseClaims(jwt string) (*Claims, error) {
 	parts := strings.Split(jwt, ".")
 	if len(parts) != 3 {
 		return nil, errors.New("invalid JWT format")
@@ -32,34 +32,27 @@ func parseUnsafeClaims(jwt string) (*UnsafeClaims, error) {
 	if err != nil {
 		return nil, err
 	}
-	var c UnsafeClaims
+	var c Claims
 	if err := json.Unmarshal(payloadBytes, &c); err != nil {
 		return nil, err
 	}
 	return &c, nil
 }
 
-// AuthUnsafe parses the token WITHOUT verifying the signature.
-// It only checks exp and then puts user_id in Gin context.
-func AuthUnsafe() gin.HandlerFunc {
+func AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		authz := c.GetHeader("Authorization")
-		if !strings.HasPrefix(authz, "Bearer ") {
-			c.AbortWithStatusJSON(401, gin.H{"error": "missing bearer token"})
-			return
-		}
-		token := strings.TrimPrefix(authz, "Bearer ")
+		token := c.GetHeader("Authorization")
 
-		claims, err := parseUnsafeClaims(token)
+		if !strings.HasPrefix(token, "Bearer ") {
+			token = "Bearer " + strings.Trim(token, " ")
+		}
+
+		tokenWithOutBearer := strings.TrimPrefix(token, "Bearer ")
+
+		claims, err := parseClaims(tokenWithOutBearer)
+
 		if err != nil {
 			c.AbortWithStatusJSON(401, gin.H{"error": "invalid token payload"})
-			return
-		}
-
-		// Minimal safety: reject expired tokens
-		now := time.Now().Unix()
-		if claims.Exp != 0 && now >= claims.Exp {
-			c.AbortWithStatusJSON(401, gin.H{"error": "token expired"})
 			return
 		}
 
@@ -67,10 +60,37 @@ func AuthUnsafe() gin.HandlerFunc {
 			c.AbortWithStatusJSON(401, gin.H{"error": "invalid token payload"})
 		}
 
-		// DEV ONLY: we did not verify the signature!
-		// Expose user_id to handlers
+		if !isTokenValid(token) {
+			c.AbortWithStatusJSON(401, gin.H{"error": "invalid token"})
+		}
+
 		c.Set("user_id", claims.UserID)
 		c.Set("access_token", token)
 		c.Next()
 	}
+}
+
+func isTokenValid(token string) bool {
+
+	url := "https://api.metable.ir/api/users/profile/"
+
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		panic(err)
+	}
+	req.Header.Set("Accept", "application/json")
+	req.Header.Set("Authorization", "Bearer "+token)
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		panic(err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode == http.StatusUnauthorized {
+		return false
+	}
+
+	return true
 }

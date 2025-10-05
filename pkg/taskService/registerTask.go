@@ -45,7 +45,7 @@ func RunTask(t database.Task, models database.Models) {
 		return
 	}
 
-	machine, err := machineService.GetMachineWithData(t.MachineId)
+	machine, err := machineService.GetMachineWithData(t.MachineId, t.AccessToken)
 	if err != nil {
 		return
 	}

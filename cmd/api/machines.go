@@ -19,7 +19,10 @@ import (
 //	@Router			/api/v1/machines [get]
 //	@Security		BearerAuth
 func (app *application) getAllMachines(c *gin.Context) {
-	machines, err := machineService.GetAllMachines()
+
+	accessToken, _ := c.Get("access_token")
+
+	machines, err := machineService.GetAllMachines(accessToken.(string))
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retreive machines"})
