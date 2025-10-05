@@ -79,7 +79,7 @@ func isTokenValid(token string) bool {
 		panic(err)
 	}
 	req.Header.Set("Accept", "application/json")
-	req.Header.Set("Authorization", "Bearer "+token)
+	req.Header.Set("Authorization", token)
 
 	client := &http.Client{}
 	resp, err := client.Do(req)
