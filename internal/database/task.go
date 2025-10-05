@@ -97,7 +97,7 @@ func (m *TaskModel) Get(userId int, taskId int) (*Task, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	query := "SELECT * FROM tasks WHERE user_id = $1 && task_id = $2"
+	query := "SELECT * FROM tasks WHERE user_id = $1 And task_id = $2"
 
 	var task Task
 
