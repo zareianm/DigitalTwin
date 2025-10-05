@@ -5,6 +5,7 @@ import (
 	"DigitalTwin/pkg/cppService"
 	"DigitalTwin/pkg/javaService"
 	"DigitalTwin/pkg/jsService"
+	"DigitalTwin/pkg/machineService"
 	"DigitalTwin/pkg/pythonService"
 	"log"
 	"math"
@@ -44,12 +45,12 @@ func RunTask(t database.Task, models database.Models) {
 		return
 	}
 
-	machine, err := models.Machines.Get(t.MachineId)
+	machine, err := machineService.GetMachineWithData(t.MachineId)
 	if err != nil {
 		return
 	}
 
-	args, err := models.Machines.GetParameterValuesFromMachine(*machine, t.InputParameters)
+	args, err := machineService.GetParameterValuesFromMachine(*machine, t.InputParameters)
 	if err != nil {
 		return
 	}
@@ -86,12 +87,12 @@ func RunTask(t database.Task, models database.Models) {
 		return
 	}
 
-	resultsFromCode, err := models.Machines.GetOutputResultsFromCodeResult(stdOut, t.OutputParameters)
+	resultsFromCode, err := machineService.GetOutputResultsFromCodeResult(stdOut, t.OutputParameters)
 	if err != nil {
 		return
 	}
 
-	realOutputResult, _ := models.Machines.GetParameterValuesFromMachine(*machine, t.OutputParameters)
+	realOutputResult, _ := machineService.GetParameterValuesFromMachine(*machine, t.OutputParameters)
 
 	var taskLog database.TaskLog = database.TaskLog{
 		TaskId:                       t.TaskId,

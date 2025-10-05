@@ -12,6 +12,7 @@ import (
 	"DigitalTwin/pkg/fileService"
 	"DigitalTwin/pkg/javaService"
 	"DigitalTwin/pkg/jsService"
+	"DigitalTwin/pkg/machineService"
 	"DigitalTwin/pkg/pythonService"
 	"DigitalTwin/pkg/taskService"
 
@@ -112,7 +113,7 @@ func (app *application) createTask(c *gin.Context) {
 		outputErrorRates = append(outputErrorRates, int64(num))
 	}
 
-	machine, err := app.models.Machines.Get(machineId)
+	machine, err := machineService.GetMachineWithData(machineId)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retreive machine"})
 		return
@@ -123,7 +124,7 @@ func (app *application) createTask(c *gin.Context) {
 		return
 	}
 
-	args, err := app.models.Machines.GetParameterValuesFromMachine(*machine, inputParams)
+	args, err := machineService.GetParameterValuesFromMachine(*machine, inputParams)
 	if err != nil {
 		c.JSON(404, gin.H{"error": "invalid inputParameters"})
 		return
@@ -169,7 +170,7 @@ func (app *application) createTask(c *gin.Context) {
 		return
 	}
 
-	_, err = app.models.Machines.GetOutputResultsFromCodeResult(stdOut, outputParams)
+	_, err = machineService.GetOutputResultsFromCodeResult(stdOut, outputParams)
 	if err != nil {
 		c.JSON(404, gin.H{"error": "invalid outputParameters"})
 		return

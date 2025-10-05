@@ -27,9 +27,6 @@ func (app *application) routes() http.Handler {
 	v1 := g.Group("/api/v1", auth.AuthUnsafe())
 	{
 		v1.GET("/machines", app.getAllMachines)
-		v1.GET("/machines/:id", app.getMachine)
-		v1.POST("/machines/create", app.createMachine)
-		v1.DELETE("/machines/delete/:id", app.deleteMachine)
 
 		v1.POST("/tasks/create", app.createTask)
 		v1.GET("/tasks/getTaskList", app.getAllTasks)

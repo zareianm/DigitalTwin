@@ -1,18 +1,16 @@
 definitions:
-  database.Machine:
-    properties:
-      machine_id:
-        type: integer
-      name:
-        type: string
-      parameters:
-        type: string
-    type: object
   main.InputParameter:
     properties:
       parameterName:
         type: string
       parameterValue:
+        type: string
+    type: object
+  main.MachineListOutputModel:
+    properties:
+      machineId:
+        type: integer
+      machineName:
         type: string
     type: object
   main.MaximumErrorRate:
@@ -110,78 +108,11 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/database.Machine'
+              $ref: '#/definitions/main.MachineListOutputModel'
             type: array
       security:
       - BearerAuth: []
       summary: Returns all machines
-      tags:
-      - machines
-  /api/v1/machines/{id}:
-    delete:
-      consumes:
-      - application/json
-      description: Deletes an existing machine
-      parameters:
-      - description: Machine ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "204":
-          description: No Content
-      security:
-      - BearerAuth: []
-      summary: Deletes an existing machine
-      tags:
-      - machines
-    get:
-      consumes:
-      - application/json
-      description: Returns a single machine
-      parameters:
-      - description: Machine ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/database.Machine'
-      security:
-      - BearerAuth: []
-      summary: Returns a single machine
-      tags:
-      - machines
-  /api/v1/machines/create:
-    post:
-      consumes:
-      - application/json
-      description: Creates a new machine
-      parameters:
-      - description: Machine
-        in: body
-        name: machine
-        required: true
-        schema:
-          $ref: '#/definitions/database.Machine'
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Created
-          schema:
-            $ref: '#/definitions/database.Machine'
-      security:
-      - BearerAuth: []
-      summary: Creates a new machine
       tags:
       - machines
   /api/v1/tasks/GetTaskDetail/{task_id}:

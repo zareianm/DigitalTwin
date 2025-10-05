@@ -39,117 +39,9 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/database.Machine"
+                                "$ref": "#/definitions/main.MachineListOutputModel"
                             }
                         }
-                    }
-                }
-            }
-        },
-        "/api/v1/machines/create": {
-            "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Creates a new machine",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "machines"
-                ],
-                "summary": "Creates a new machine",
-                "parameters": [
-                    {
-                        "description": "Machine",
-                        "name": "machine",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/database.Machine"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Created",
-                        "schema": {
-                            "$ref": "#/definitions/database.Machine"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/machines/{id}": {
-            "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Returns a single machine",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "machines"
-                ],
-                "summary": "Returns a single machine",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Machine ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/database.Machine"
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Deletes an existing machine",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "machines"
-                ],
-                "summary": "Deletes an existing machine",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Machine ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "204": {
-                        "description": "No Content"
                     }
                 }
             }
@@ -331,20 +223,6 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "database.Machine": {
-            "type": "object",
-            "properties": {
-                "machine_id": {
-                    "type": "integer"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "parameters": {
-                    "type": "string"
-                }
-            }
-        },
         "main.InputParameter": {
             "type": "object",
             "properties": {
@@ -352,6 +230,17 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "parameterValue": {
+                    "type": "string"
+                }
+            }
+        },
+        "main.MachineListOutputModel": {
+            "type": "object",
+            "properties": {
+                "machineId": {
+                    "type": "integer"
+                },
+                "machineName": {
                     "type": "string"
                 }
             }
