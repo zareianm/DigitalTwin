@@ -57,11 +57,11 @@ func (m *TaskModel) UpdateLastExecute(task *Task) error {
 	return nil
 }
 
-func (m *TaskModel) GetAllUserTask(userId int) ([]*Task, error) {
+func (m *TaskModel) GetUserTaskWithPagination(userId int, page int) ([]*Task, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	query := "SELECT * FROM tasks WHERE user_id = " + strconv.Itoa(userId)
+	query := "SELECT * FROM tasks WHERE user_id = " + strconv.Itoa(userId) + " LIMIT 50 OFFSET " + strconv.Itoa((page-1)*50)
 
 	rows, err := m.DB.QueryContext(ctx, query)
 	if err != nil {

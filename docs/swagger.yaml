@@ -251,11 +251,17 @@ paths:
       summary: Creates a new task
       tags:
       - tasks
-  /api/v1/tasks/getTaskList:
+  /api/v1/tasks/getTaskList/{page}:
     get:
       consumes:
       - application/json
-      description: Returns all tasks
+      description: returns tasks with pagination
+      parameters:
+      - description: number of page
+        in: path
+        name: page
+        required: true
+        type: integer
       produces:
       - application/json
       responses:
@@ -267,7 +273,7 @@ paths:
             type: array
       security:
       - BearerAuth: []
-      summary: Returns all tasks
+      summary: returns tasks with pagination
       tags:
       - tasks
   /api/v1/tasks/stopTask/{task_id}:

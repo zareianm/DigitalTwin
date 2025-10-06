@@ -238,14 +238,14 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/tasks/getTaskList": {
+        "/api/v1/tasks/getTaskList/{page}": {
             "get": {
                 "security": [
                     {
                         "BearerAuth": []
                     }
                 ],
-                "description": "Returns all tasks",
+                "description": "returns tasks with pagination",
                 "consumes": [
                     "application/json"
                 ],
@@ -255,7 +255,16 @@ const docTemplate = `{
                 "tags": [
                     "tasks"
                 ],
-                "summary": "Returns all tasks",
+                "summary": "returns tasks with pagination",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "number of page",
+                        "name": "page",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",

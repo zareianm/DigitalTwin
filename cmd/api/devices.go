@@ -26,12 +26,7 @@ func (app *application) getDevicesWithPagination(c *gin.Context) {
 
 	page, err := strconv.Atoi(c.Param("page"))
 
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid page number"})
-		return
-	}
-
-	if page < 1 {
+	if err != nil || page < 1 {
 		page = 1
 	}
 

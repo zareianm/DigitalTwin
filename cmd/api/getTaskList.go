@@ -2,27 +2,35 @@ package main
 
 import (
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
 )
 
-// GetTasks returns all tasks
+// GetTasks returns tasks with pagination
 //
-//	@Summary		Returns all tasks
-//	@Description	Returns all tasks
+//	@Summary		returns tasks with pagination
+//	@Description	returns tasks with pagination
 //	@Tags			tasks
 //	@Accept			json
 //	@Produce		json
+//	@Param			page	path		int	true	"number of page"
 //	@Success		200		{object}	[]TaskOutputModel
-//	@Router			/api/v1/tasks/getTaskList [get]
+//	@Router			/api/v1/tasks/getTaskList/{page} [get]
 //	@Security		BearerAuth
 func (app *application) getAllTasks(c *gin.Context) {
+
+	page, err := strconv.Atoi(c.Param("page"))
+
+	if err != nil || page < 1 {
+		page = 1
+	}
 
 	userIdStr, _ := c.Get("user_id")
 	userId, _ := userIdStr.(int)
 
-	tasks, err := app.models.Tasks.GetAllUserTask(userId)
+	tasks, err := app.models.Tasks.GetUserTaskWithPagination(userId, page)
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retreive tasks"})

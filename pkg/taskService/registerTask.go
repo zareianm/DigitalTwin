@@ -23,12 +23,16 @@ func RunMissedTasks(cr *cron.Cron, models database.Models) {
 	if err != nil {
 		log.Fatalf("query tasks: %v", err)
 	}
+	now := time.Now().UTC()
 
 	for i := 0; i < len(rows); i++ {
-		if rows[i].Active {
-			cronId := RegisterTask(*rows[i], cr, models)
-			models.Tasks.UpdateTaskCronId(rows[i], cronId)
+
+		if !rows[i].Active || rows[i].EndTime != nil && now.After(*rows[i].EndTime) {
+			continue
 		}
+
+		cronId := RegisterTask(*rows[i], cr, models)
+		models.Tasks.UpdateTaskCronId(rows[i], cronId)
 	}
 }
 
