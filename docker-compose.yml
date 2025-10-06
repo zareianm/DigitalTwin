@@ -20,11 +20,8 @@ services:
     build: .
     environment:
       PORT: "8080"
-      JWT_SECRET: "sdsf"
-      # your code expects these exact keys:
       databaseconnectionstring: "postgres://postgres:uR9eZ7p!xK2dN4@digital_twin_db:5432/DigitalTwinDb?sslmode=disable"
       baseUploadDir: "/appdata/upload-files"
-      VOLUME_NAME: "digitaltwin_appdata"
       BASE_URL: "https://digitaltwin.sadegh.sbs"
       Migrations_Path: "file://cmd/migrate/migrations"
     ports:

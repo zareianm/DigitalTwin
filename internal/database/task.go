@@ -123,10 +123,24 @@ func (m *TaskModel) Delete(id int) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	query := "DELETE FROM tasks WHERE task_id = $1"
-
-	_, err := m.DB.ExecContext(ctx, query, id)
+	tx, err := m.DB.BeginTx(ctx, nil)
 	if err != nil {
+		return err
+	}
+
+	_, err = tx.ExecContext(ctx, `DELETE FROM task_logs WHERE task_id = $1`, id)
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	_, err = tx.ExecContext(ctx, `DELETE FROM tasks WHERE task_id = $1`, id)
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	if err := tx.Commit(); err != nil {
 		return err
 	}
 

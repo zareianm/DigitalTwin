@@ -251,6 +251,27 @@ paths:
       summary: Creates a new task
       tags:
       - tasks
+  /api/v1/tasks/delete/{task_id}:
+    delete:
+      consumes:
+      - application/json
+      description: deletes an existing task
+      parameters:
+      - description: Task ID
+        in: path
+        name: task_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+      security:
+      - BearerAuth: []
+      summary: deletes an existing task
+      tags:
+      - tasks
   /api/v1/tasks/getTaskList/{page}:
     get:
       consumes:
