@@ -101,7 +101,7 @@ func (app *application) createTask(c *gin.Context) {
 		return
 	}
 
-	if endTime.Before(startTime) {
+	if endTime != nil && endTime.Before(startTime) {
 		c.JSON(400, gin.H{"error": "invalid end time, must be greater than start time"})
 		return
 	}
