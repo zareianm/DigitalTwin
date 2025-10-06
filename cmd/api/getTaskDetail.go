@@ -53,14 +53,14 @@ func (app *application) getTaskDetail(c *gin.Context) {
 
 	result := TaskDetailOutputModel{
 		TaskId:               task.TaskId,
-		MachineId:            task.MachineId,
+		DeviceId:             task.DeviceId,
 		CreatedAt:            task.CreatedAt,
 		IsActive:             task.StartTime.Before(time.Now()) && task.EndTime.After(time.Now()),
 		PluginOperatingHours: getTaskOperatingHour(*task),
 		Data:                 []TaskLog{},
 		MaximumErrorRates:    []MaximumErrorRate{},
 		TaskName:             task.TaskName,
-		MachineName:          task.MachineName,
+		DeviceName:           task.DeviceName,
 	}
 
 	getTaskLogs(taskLogs, &result)
@@ -92,10 +92,10 @@ func getTaskLogs(taskLogs []*database.TaskLog, result *TaskDetailOutputModel) {
 
 		for i, outputParameterName := range taskLog.OutputParameterNames {
 			outPutParam := OutputParameter{
-				ParameterName:         outputParameterName,
-				ParameterMachineValue: taskLog.OutputParameterRealValues[i],
-				ParameterCodeValue:    taskLog.OutputParameterFromCodeVales[i],
-				Status:                taskLog.Status[i],
+				ParameterName:        outputParameterName,
+				ParameterDeviceValue: taskLog.OutputParameterRealValues[i],
+				ParameterCodeValue:   taskLog.OutputParameterFromCodeVales[i],
+				Status:               taskLog.Status[i],
 			}
 
 			outputLog.OutputParameters = append(outputLog.OutputParameters, outPutParam)
@@ -148,7 +148,7 @@ func calculateSystemErrorPercentage(result *TaskDetailOutputModel) {
 				continue
 			}
 
-			realValue, _ := strconv.ParseFloat(outputParameter.ParameterMachineValue, 64)
+			realValue, _ := strconv.ParseFloat(outputParameter.ParameterDeviceValue, 64)
 
 			val := math.Abs(realValue-expected) / expected * 100
 			sum += val
@@ -165,7 +165,7 @@ func calculateSystemErrorPercentage(result *TaskDetailOutputModel) {
 
 type TaskDetailOutputModel struct {
 	TaskId                int                `json:"taskId"`
-	MachineId             int                `json:"machineId"`
+	DeviceId              int                `json:"deviceId"`
 	CreatedAt             time.Time          `json:"createdAt"`
 	IsActive              bool               `json:"isActive"`
 	PluginOperatingHours  float64            `json:"pluginOperatingHours"`
@@ -173,7 +173,7 @@ type TaskDetailOutputModel struct {
 	MaximumErrorRates     []MaximumErrorRate `json:"maximumErrorRates"`
 	SystemErrorPercentage float64            `json:"systemErrorPercentage"`
 	TaskName              string             `json:"taskName"`
-	MachineName           string             `json:"machineName"`
+	DeviceName            string             `json:"deviceName"`
 }
 
 type TaskLog struct {
@@ -188,10 +188,10 @@ type InputParameter struct {
 }
 
 type OutputParameter struct {
-	ParameterName         string `json:"parameterName"`
-	ParameterMachineValue string `json:"parameterMachineValue"`
-	ParameterCodeValue    string `json:"parameterCodeValue"`
-	Status                bool   `json:"status"`
+	ParameterName        string `json:"parameterName"`
+	ParameterDeviceValue string `json:"parameterDeviceValue"`
+	ParameterCodeValue   string `json:"parameterCodeValue"`
+	Status               bool   `json:"status"`
 }
 
 type MaximumErrorRate struct {

@@ -48,12 +48,12 @@ func (app *application) getAllTasks(c *gin.Context) {
 
 		output[i] = TaskOutputModel{
 			TaskId:               t.TaskId,
-			MachineId:            t.MachineId,
+			DeviceId:             t.DeviceId,
 			CreatedAt:            t.CreatedAt,
 			IsActive:             t.StartTime.Before(time.Now()) && t.EndTime.After(time.Now()),
 			PluginOperatingHours: operatingHours,
 			TaskName:             t.TaskName,
-			MachineName:          t.MachineName,
+			DeviceName:           t.DeviceName,
 		}
 	}
 
@@ -62,10 +62,10 @@ func (app *application) getAllTasks(c *gin.Context) {
 
 type TaskOutputModel struct {
 	TaskId               int       `json:"taskId"`
-	MachineId            int       `json:"machineId"`
+	DeviceId             int       `json:"deviceId"`
 	CreatedAt            time.Time `json:"createdAt"`
 	IsActive             bool      `json:"isActive"`
 	PluginOperatingHours float64   `json:"pluginOperatingHours"`
 	TaskName             string    `json:"taskName"`
-	MachineName          string    `json:"machineName"`
+	DeviceName           string    `json:"deviceName"`
 }

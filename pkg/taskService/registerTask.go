@@ -3,9 +3,9 @@ package taskService
 import (
 	"DigitalTwin/internal/database"
 	"DigitalTwin/pkg/cppService"
+	"DigitalTwin/pkg/deviceService"
 	"DigitalTwin/pkg/javaService"
 	"DigitalTwin/pkg/jsService"
-	"DigitalTwin/pkg/machineService"
 	"DigitalTwin/pkg/pythonService"
 	"log"
 	"math"
@@ -45,12 +45,12 @@ func RunTask(t database.Task, models database.Models) {
 		return
 	}
 
-	machine, err := machineService.GetMachineWithData(t.MachineId, t.AccessToken)
+	device, err := deviceService.GetDeviceWithData(t.DeviceId, t.AccessToken)
 	if err != nil {
 		return
 	}
 
-	args, err := machineService.GetParameterValuesFromMachine(*machine, t.InputParameters)
+	args, err := deviceService.GetParameterValuesFromDevice(*device, t.InputParameters)
 	if err != nil {
 		return
 	}
@@ -87,12 +87,12 @@ func RunTask(t database.Task, models database.Models) {
 		return
 	}
 
-	resultsFromCode, err := machineService.GetOutputResultsFromCodeResult(stdOut, t.OutputParameters)
+	resultsFromCode, err := deviceService.GetOutputResultsFromCodeResult(stdOut, t.OutputParameters)
 	if err != nil {
 		return
 	}
 
-	realOutputResult, _ := machineService.GetParameterValuesFromMachine(*machine, t.OutputParameters)
+	realOutputResult, _ := deviceService.GetParameterValuesFromDevice(*device, t.OutputParameters)
 
 	var taskLog database.TaskLog = database.TaskLog{
 		TaskId:                       t.TaskId,

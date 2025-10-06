@@ -15,7 +15,7 @@ type TaskModel struct {
 
 type Task struct {
 	TaskId                    int        `json:"task_id"`
-	MachineId                 int        `json:"machine_id"`
+	DeviceId                  int        `json:"device_id"`
 	TimeInterval              string     `json:"time_interval"`
 	CreatedAt                 time.Time  `json:"created_at"`
 	LastRun                   *time.Time `json:"last_run"`
@@ -28,16 +28,16 @@ type Task struct {
 	TaskName                  string     `json:"task_name"`
 	UserId                    int        `json:"user_id"`
 	AccessToken               string     `json:"access_token"`
-	MachineName               string     `json:"machine_name"`
+	DeviceName                string     `json:"device_name"`
 }
 
 func (m *TaskModel) Insert(task *Task) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	query := `INSERT INTO tasks(machine_id, time_interval, created_at, start_time, end_time, input_parameters, output_parameters, output_parameters_error_rate, file_path, task_name, user_id, access_token, machine_name) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) RETURNING task_id`
+	query := `INSERT INTO tasks(device_id, time_interval, created_at, start_time, end_time, input_parameters, output_parameters, output_parameters_error_rate, file_path, task_name, user_id, access_token, device_name) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) RETURNING task_id`
 
-	return m.DB.QueryRowContext(ctx, query, task.MachineId, task.TimeInterval, task.CreatedAt, task.StartTime, task.EndTime, pq.Array(task.InputParameters), pq.Array(task.OutputParameters), pq.Array(task.OutputParametersErrorRate), task.FilePath, task.TaskName, task.UserId, task.AccessToken, task.MachineName).Scan(&task.TaskId)
+	return m.DB.QueryRowContext(ctx, query, task.DeviceId, task.TimeInterval, task.CreatedAt, task.StartTime, task.EndTime, pq.Array(task.InputParameters), pq.Array(task.OutputParameters), pq.Array(task.OutputParametersErrorRate), task.FilePath, task.TaskName, task.UserId, task.AccessToken, task.DeviceName).Scan(&task.TaskId)
 }
 
 func (m *TaskModel) UpdateLastExecute(task *Task) error {
@@ -74,9 +74,9 @@ func (m *TaskModel) GetAllUserTask(userId int) ([]*Task, error) {
 		var task Task
 
 		err := rows.Scan(&task.TaskId, &task.TimeInterval, &task.CreatedAt, &task.LastRun,
-			&task.StartTime, &task.EndTime, &task.MachineId, pq.Array(&task.InputParameters),
+			&task.StartTime, &task.EndTime, &task.DeviceId, pq.Array(&task.InputParameters),
 			pq.Array(&task.OutputParameters), pq.Array(&task.OutputParametersErrorRate),
-			&task.FilePath, &task.TaskName, &task.UserId, &task.AccessToken, &task.MachineName)
+			&task.FilePath, &task.TaskName, &task.UserId, &task.AccessToken, &task.DeviceName)
 
 		if err != nil {
 			return nil, err
@@ -102,9 +102,9 @@ func (m *TaskModel) Get(userId int, taskId int) (*Task, error) {
 	var task Task
 
 	err := m.DB.QueryRowContext(ctx, query, userId, taskId).Scan(&task.TaskId, &task.TimeInterval, &task.CreatedAt,
-		&task.LastRun, &task.StartTime, &task.EndTime, &task.MachineId,
+		&task.LastRun, &task.StartTime, &task.EndTime, &task.DeviceId,
 		pq.Array(&task.InputParameters), pq.Array(&task.OutputParameters),
-		pq.Array(&task.OutputParametersErrorRate), &task.FilePath, &task.TaskName, &task.UserId, &task.AccessToken, &task.MachineName)
+		pq.Array(&task.OutputParametersErrorRate), &task.FilePath, &task.TaskName, &task.UserId, &task.AccessToken, &task.DeviceName)
 
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -149,9 +149,9 @@ func (m *TaskModel) GetAll() ([]*Task, error) {
 		var task Task
 
 		err := rows.Scan(&task.TaskId, &task.TimeInterval, &task.CreatedAt, &task.LastRun,
-			&task.StartTime, &task.EndTime, &task.MachineId, pq.Array(&task.InputParameters),
+			&task.StartTime, &task.EndTime, &task.DeviceId, pq.Array(&task.InputParameters),
 			pq.Array(&task.OutputParameters), pq.Array(&task.OutputParametersErrorRate),
-			&task.FilePath, &task.TaskName, &task.UserId, &task.AccessToken, &task.MachineName)
+			&task.FilePath, &task.TaskName, &task.UserId, &task.AccessToken, &task.DeviceName)
 
 		if err != nil {
 			return nil, err

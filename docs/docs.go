@@ -15,14 +15,14 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/api/v1/machines": {
+        "/api/v1/devices": {
             "get": {
                 "security": [
                     {
                         "BearerAuth": []
                     }
                 ],
-                "description": "Returns all machines",
+                "description": "Returns all devices",
                 "consumes": [
                     "application/json"
                 ],
@@ -30,30 +30,30 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "machines"
+                    "devices"
                 ],
-                "summary": "Returns all machines",
+                "summary": "Returns all devices",
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/main.MachineListOutputModel"
+                                "$ref": "#/definitions/main.DeviceListOutputModel"
                             }
                         }
                     }
                 }
             }
         },
-        "/api/v1/machines/getMachineParameters/{machine_id}": {
+        "/api/v1/devices/getDeviceParameters/{device_id}": {
             "get": {
                 "security": [
                     {
                         "BearerAuth": []
                     }
                 ],
-                "description": "returns machine parameters",
+                "description": "returns device parameters",
                 "consumes": [
                     "application/json"
                 ],
@@ -61,14 +61,14 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "machines"
+                    "devices"
                 ],
-                "summary": "returns machine parameters",
+                "summary": "returns device parameters",
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "machine ID",
-                        "name": "machine_id",
+                        "description": "device ID",
+                        "name": "device_id",
                         "in": "path",
                         "required": true
                     }
@@ -158,8 +158,8 @@ const docTemplate = `{
                     },
                     {
                         "type": "integer",
-                        "description": "ID of the machine",
-                        "name": "machineId",
+                        "description": "ID of the device",
+                        "name": "deviceId",
                         "in": "formData",
                         "required": true
                     },
@@ -263,6 +263,17 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "main.DeviceListOutputModel": {
+            "type": "object",
+            "properties": {
+                "deviceId": {
+                    "type": "integer"
+                },
+                "deviceName": {
+                    "type": "string"
+                }
+            }
+        },
         "main.InputParameter": {
             "type": "object",
             "properties": {
@@ -270,17 +281,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "parameterValue": {
-                    "type": "string"
-                }
-            }
-        },
-        "main.MachineListOutputModel": {
-            "type": "object",
-            "properties": {
-                "machineId": {
-                    "type": "integer"
-                },
-                "machineName": {
                     "type": "string"
                 }
             }
@@ -302,7 +302,7 @@ const docTemplate = `{
                 "parameterCodeValue": {
                     "type": "string"
                 },
-                "parameterMachineValue": {
+                "parameterDeviceValue": {
                     "type": "string"
                 },
                 "parameterName": {
@@ -336,14 +336,14 @@ const docTemplate = `{
                         "$ref": "#/definitions/main.TaskLog"
                     }
                 },
-                "isActive": {
-                    "type": "boolean"
-                },
-                "machineId": {
+                "deviceId": {
                     "type": "integer"
                 },
-                "machineName": {
+                "deviceName": {
                     "type": "string"
+                },
+                "isActive": {
+                    "type": "boolean"
                 },
                 "maximumErrorRates": {
                     "type": "array",
@@ -391,14 +391,14 @@ const docTemplate = `{
                 "createdAt": {
                     "type": "string"
                 },
-                "isActive": {
-                    "type": "boolean"
-                },
-                "machineId": {
+                "deviceId": {
                     "type": "integer"
                 },
-                "machineName": {
+                "deviceName": {
                     "type": "string"
+                },
+                "isActive": {
+                    "type": "boolean"
                 },
                 "pluginOperatingHours": {
                     "type": "number"

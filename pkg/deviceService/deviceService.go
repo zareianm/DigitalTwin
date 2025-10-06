@@ -1,4 +1,4 @@
-package machineService
+package deviceService
 
 import (
 	"encoding/json"
@@ -15,12 +15,12 @@ type DeviceApiModel struct {
 	Name string `json:"name"`
 }
 
-type MachineListModel struct {
-	MachineId   int
-	MachineName string
+type DeviceListModel struct {
+	DeviceId   int
+	DeviceName string
 }
 
-func GetAllMachines(token string) ([]MachineListModel, error) {
+func GetAllDevices(token string) ([]DeviceListModel, error) {
 	url := "https://api.metable.ir/api/device_list/"
 
 	// Create HTTP request
@@ -50,21 +50,21 @@ func GetAllMachines(token string) ([]MachineListModel, error) {
 		return nil, fmt.Errorf("failed to get devices: %s", resp.Status)
 	}
 
-	var devices []DeviceApiModel
-	err = json.Unmarshal(body, &devices)
+	var devicesFromApi []DeviceApiModel
+	err = json.Unmarshal(body, &devicesFromApi)
 	if err != nil {
 		panic(err)
 	}
 
-	var machines []MachineListModel
-	for _, d := range devices {
-		machines = append(machines, MachineListModel{
-			MachineId:   d.ID,
-			MachineName: d.Name,
+	var devices []DeviceListModel
+	for _, d := range devicesFromApi {
+		devices = append(devices, DeviceListModel{
+			DeviceId:   d.ID,
+			DeviceName: d.Name,
 		})
 	}
 
-	return machines, nil
+	return devices, nil
 
 }
 
@@ -82,13 +82,13 @@ type OriginalDatum struct {
 	ReceivedTime time.Time              `json:"received_time"`
 }
 
-type MachineWithData struct {
-	MachineId   int
-	MachineName string
-	Json        map[string]interface{} `json:"json"`
+type DeviceWithData struct {
+	DeviceId   int
+	DeviceName string
+	Json       map[string]interface{} `json:"json"`
 }
 
-func GetMachineWithData(machineId int, token string) (*MachineWithData, error) {
+func GetDeviceWithData(deviceId int, token string) (*DeviceWithData, error) {
 	url := "https://api.metable.ir/api/data_list/"
 
 	// Prepare the request
@@ -115,7 +115,7 @@ func GetMachineWithData(machineId int, token string) (*MachineWithData, error) {
 
 	if resp.StatusCode != http.StatusOK {
 		fmt.Printf("Error: %s\n%s\n", resp.Status, string(body))
-		return nil, fmt.Errorf("failed to get machine data: %s", resp.Status)
+		return nil, fmt.Errorf("failed to get device data: %s", resp.Status)
 	}
 
 	var dataResp DataListResponse
@@ -124,17 +124,17 @@ func GetMachineWithData(machineId int, token string) (*MachineWithData, error) {
 		panic(err)
 	}
 
-	var machineData *MachineWithData = getLatestByDeviceId(dataResp.OriginalData, machineId)
+	var deviceData *DeviceWithData = getLatestByDeviceId(dataResp.OriginalData, deviceId)
 
-	if machineData == nil {
-		return nil, fmt.Errorf("no data found for machine ID %d", machineId)
+	if deviceData == nil {
+		return nil, fmt.Errorf("no data found for device ID %d", deviceId)
 	}
 
-	return machineData, nil
+	return deviceData, nil
 
 }
 
-func getLatestByDeviceId(data []OriginalDatum, deviceID int) *MachineWithData {
+func getLatestByDeviceId(data []OriginalDatum, deviceID int) *DeviceWithData {
 	var latest *OriginalDatum
 	for i := range data {
 		d := &data[i]
@@ -150,13 +150,13 @@ func getLatestByDeviceId(data []OriginalDatum, deviceID int) *MachineWithData {
 		return nil
 	}
 
-	machineData := &MachineWithData{
-		MachineId:   latest.Device.ID,
-		MachineName: latest.Device.Name,
-		Json:        latest.JSON,
+	deviceData := &DeviceWithData{
+		DeviceId:   latest.Device.ID,
+		DeviceName: latest.Device.Name,
+		Json:       latest.JSON,
 	}
 
-	return machineData
+	return deviceData
 }
 
 func GetOutputResultsFromCodeResult(outputResult string, outputParams []string) ([]string, error) {
@@ -175,11 +175,11 @@ func GetOutputResultsFromCodeResult(outputResult string, outputParams []string) 
 	return results, nil
 }
 
-func GetParameterValuesFromMachine(machine MachineWithData, neededParameters []string) ([]string, error) {
+func GetParameterValuesFromDevice(device DeviceWithData, neededParameters []string) ([]string, error) {
 
 	results := make([]string, len(neededParameters))
 	for i, key := range neededParameters {
-		if val, ok := machine.Json[key]; ok && val != nil {
+		if val, ok := device.Json[key]; ok && val != nil {
 			results[i] = fmt.Sprintf("%v", val) // convert any type to string
 		} else {
 			return nil, errors.New("key not found: " + key)

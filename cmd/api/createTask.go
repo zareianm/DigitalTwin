@@ -9,10 +9,10 @@ import (
 	"time"
 
 	"DigitalTwin/pkg/cppService"
+	"DigitalTwin/pkg/deviceService"
 	"DigitalTwin/pkg/fileService"
 	"DigitalTwin/pkg/javaService"
 	"DigitalTwin/pkg/jsService"
-	"DigitalTwin/pkg/machineService"
 	"DigitalTwin/pkg/pythonService"
 	"DigitalTwin/pkg/taskService"
 
@@ -33,7 +33,7 @@ type SaveTaskResult struct {
 //			@Produce		json
 //		    @Param        	file  					  formData  	file		true	"C++ or Python or Java or Javascript source file to scan"
 //			@Param        	taskName  				  formData  	string 		true 	"Name of task"
-//			@Param        	machineId  				  formData  	int 		true 	"ID of the machine"
+//			@Param        	deviceId  				  formData  	int 		true 	"ID of the device"
 //			@Param        	intervalTimeInMinutes     formData  	int   		true  	"interval time in minutes"
 //			@Param        	inputParameters     	  formData  	[]string   	true  	"input parmas" collectionFormat(multi)
 //			@Param        	outputParameters          formData  	[]string   	true  	"output parmas" collectionFormat(multi)
@@ -58,9 +58,9 @@ func (app *application) createTask(c *gin.Context) {
 	}
 	defer f.Close()
 
-	machineId, err := strconv.Atoi(c.PostForm("machineId"))
+	deviceId, err := strconv.Atoi(c.PostForm("deviceId"))
 	if err != nil {
-		c.JSON(400, gin.H{"error": "invalid machineId"})
+		c.JSON(400, gin.H{"error": "invalid deviceId"})
 		return
 	}
 
@@ -115,18 +115,18 @@ func (app *application) createTask(c *gin.Context) {
 		outputErrorRates = append(outputErrorRates, int64(num))
 	}
 
-	machine, err := machineService.GetMachineWithData(machineId, accessToken.(string))
+	device, err := deviceService.GetDeviceWithData(deviceId, accessToken.(string))
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retreive machine"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retreive device"})
 		return
 	}
 
-	if machine == nil {
-		c.JSON(404, gin.H{"error": "invalid machineId"})
+	if device == nil {
+		c.JSON(404, gin.H{"error": "invalid deviceId"})
 		return
 	}
 
-	args, err := machineService.GetParameterValuesFromMachine(*machine, inputParams)
+	args, err := deviceService.GetParameterValuesFromDevice(*device, inputParams)
 	if err != nil {
 		c.JSON(404, gin.H{"error": "invalid inputParameters"})
 		return
@@ -172,14 +172,14 @@ func (app *application) createTask(c *gin.Context) {
 		return
 	}
 
-	_, err = machineService.GetOutputResultsFromCodeResult(stdOut, outputParams)
+	_, err = deviceService.GetOutputResultsFromCodeResult(stdOut, outputParams)
 	if err != nil {
 		c.JSON(404, gin.H{"error": "invalid outputParameters"})
 		return
 	}
 
 	var task database.Task = database.Task{
-		MachineId:                 machineId,
+		DeviceId:                  deviceId,
 		TimeInterval:              intervalTime,
 		CreatedAt:                 time.Now().UTC(),
 		StartTime:                 startTime,
@@ -191,7 +191,7 @@ func (app *application) createTask(c *gin.Context) {
 		TaskName:                  taskName,
 		UserId:                    userId,
 		AccessToken:               accessToken.(string),
-		MachineName:               machine.MachineName,
+		DeviceName:                device.DeviceName,
 	}
 
 	err = app.models.Tasks.Insert(&task)
