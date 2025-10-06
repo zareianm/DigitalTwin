@@ -259,6 +259,43 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/api/v1/tasks/stopTask/{task_id}": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "stops a task from running",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "tasks"
+                ],
+                "summary": "stops a task from running",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Task ID",
+                        "name": "task_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/main.StopTaskResultModel"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -320,6 +357,14 @@ const docTemplate = `{
                 },
                 "taskId": {
                     "type": "integer"
+                }
+            }
+        },
+        "main.StopTaskResultModel": {
+            "type": "object",
+            "properties": {
+                "success": {
+                    "type": "boolean"
                 }
             }
         },

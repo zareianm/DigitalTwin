@@ -25,16 +25,21 @@ func RunMissedTasks(cr *cron.Cron, models database.Models) {
 	}
 
 	for i := 0; i < len(rows); i++ {
-		RegisterTask(*rows[i], cr, models)
+		cronId := RegisterTask(*rows[i], cr, models)
+		models.Tasks.UpdateTaskCronId(rows[i], cronId)
 	}
 }
 
-func RegisterTask(t database.Task, cr *cron.Cron, models database.Models) {
+func RegisterTask(t database.Task, cr *cron.Cron, models database.Models) int64 {
 	// capture by value so each closure has its own copy
-	_, err := cr.AddFunc(t.TimeInterval, func() { RunTask(t, models) })
+	cronId, err := cr.AddFunc(t.TimeInterval, func() { RunTask(t, models) })
+
 	if err != nil {
 		log.Printf("failed to register task %d: %v", t.TaskId, err)
+		return 0
 	}
+
+	return int64(cronId)
 }
 
 func RunTask(t database.Task, models database.Models) {

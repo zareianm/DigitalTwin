@@ -32,6 +32,7 @@ func (app *application) routes() http.Handler {
 		v1.POST("/tasks/create", app.createTask)
 		v1.GET("/tasks/getTaskList", app.getAllTasks)
 		v1.GET("/tasks/GetTaskDetail/:task_id", app.getTaskDetail)
+		v1.POST("/tasks/stopTask/:task_id", app.stopTask)
 	}
 
 	g.GET("/swagger/*any", func(c *gin.Context) {

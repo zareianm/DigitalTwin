@@ -205,7 +205,9 @@ func (app *application) createTask(c *gin.Context) {
 		return
 
 	}
-	taskService.RegisterTask(task, app.cr, app.models)
+
+	cronId := taskService.RegisterTask(task, app.cr, app.models)
+	app.models.Tasks.UpdateTaskCronId(&task, cronId)
 
 	result := SaveTaskResult{
 		Error:  "",

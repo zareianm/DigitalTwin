@@ -29,6 +29,7 @@ type Task struct {
 	UserId                    int        `json:"user_id"`
 	AccessToken               string     `json:"access_token"`
 	DeviceName                string     `json:"device_name"`
+	CronId                    *int64     `json:"cron_id"`
 }
 
 func (m *TaskModel) Insert(task *Task) error {
@@ -76,7 +77,7 @@ func (m *TaskModel) GetAllUserTask(userId int) ([]*Task, error) {
 		err := rows.Scan(&task.TaskId, &task.TimeInterval, &task.CreatedAt, &task.LastRun,
 			&task.StartTime, &task.EndTime, &task.DeviceId, pq.Array(&task.InputParameters),
 			pq.Array(&task.OutputParameters), pq.Array(&task.AcceptableErrorPercentage),
-			&task.FilePath, &task.TaskName, &task.UserId, &task.AccessToken, &task.DeviceName)
+			&task.FilePath, &task.TaskName, &task.UserId, &task.AccessToken, &task.DeviceName, &task.CronId)
 
 		if err != nil {
 			return nil, err
@@ -104,7 +105,7 @@ func (m *TaskModel) Get(userId int, taskId int) (*Task, error) {
 	err := m.DB.QueryRowContext(ctx, query, userId, taskId).Scan(&task.TaskId, &task.TimeInterval, &task.CreatedAt,
 		&task.LastRun, &task.StartTime, &task.EndTime, &task.DeviceId,
 		pq.Array(&task.InputParameters), pq.Array(&task.OutputParameters),
-		pq.Array(&task.AcceptableErrorPercentage), &task.FilePath, &task.TaskName, &task.UserId, &task.AccessToken, &task.DeviceName)
+		pq.Array(&task.AcceptableErrorPercentage), &task.FilePath, &task.TaskName, &task.UserId, &task.AccessToken, &task.DeviceName, &task.CronId)
 
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -151,7 +152,7 @@ func (m *TaskModel) GetAll() ([]*Task, error) {
 		err := rows.Scan(&task.TaskId, &task.TimeInterval, &task.CreatedAt, &task.LastRun,
 			&task.StartTime, &task.EndTime, &task.DeviceId, pq.Array(&task.InputParameters),
 			pq.Array(&task.OutputParameters), pq.Array(&task.AcceptableErrorPercentage),
-			&task.FilePath, &task.TaskName, &task.UserId, &task.AccessToken, &task.DeviceName)
+			&task.FilePath, &task.TaskName, &task.UserId, &task.AccessToken, &task.DeviceName, &task.CronId)
 
 		if err != nil {
 			return nil, err
@@ -166,4 +167,19 @@ func (m *TaskModel) GetAll() ([]*Task, error) {
 
 	return tasks, nil
 
+}
+
+func (m *TaskModel) UpdateTaskCronId(task *Task, cronId int64) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	query := "UPDATE tasks SET cron_id = $1 WHERE task_id = $2"
+
+	_, err := m.DB.ExecContext(ctx, query, cronId, task.TaskId)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

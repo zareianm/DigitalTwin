@@ -38,6 +38,11 @@ definitions:
       taskId:
         type: integer
     type: object
+  main.StopTaskResultModel:
+    properties:
+      success:
+        type: boolean
+    type: object
   main.TaskDetailOutputModel:
     properties:
       acceptableErrorPercentage:
@@ -257,6 +262,29 @@ paths:
       security:
       - BearerAuth: []
       summary: Returns all tasks
+      tags:
+      - tasks
+  /api/v1/tasks/stopTask/{task_id}:
+    post:
+      consumes:
+      - application/json
+      description: stops a task from running
+      parameters:
+      - description: Task ID
+        in: path
+        name: task_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/main.StopTaskResultModel'
+      security:
+      - BearerAuth: []
+      summary: stops a task from running
       tags:
       - tasks
 securityDefinitions:
