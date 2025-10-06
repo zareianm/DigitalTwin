@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"regexp"
+	"strconv"
 	"time"
 )
 
@@ -160,16 +160,39 @@ func getLatestByDeviceId(data []OriginalDatum, deviceID int) *DeviceWithData {
 }
 
 func GetOutputResultsFromCodeResult(outputResult string, outputParams []string) ([]string, error) {
+	// Parse JSON into a generic map
+	var obj map[string]interface{}
+	if err := json.Unmarshal([]byte(outputResult), &obj); err != nil {
+		return nil, fmt.Errorf("invalid JSON: %w", err)
+	}
+
 	results := make([]string, 0, len(outputParams))
 
 	for _, key := range outputParams {
-		// Regex: match key=VALUE where VALUE is non-space, non-comma, non-dot
-		re := regexp.MustCompile(fmt.Sprintf(`\b%s\s*=\s*([^,\s\.]+)`, regexp.QuoteMeta(key)))
-		match := re.FindStringSubmatch(outputResult)
-		if len(match) < 2 {
+		val, ok := obj[key]
+		if !ok {
 			return nil, errors.New("key not found: " + key)
 		}
-		results = append(results, match[1])
+
+		switch v := val.(type) {
+		case string:
+			results = append(results, v)
+		case float64:
+			// Json numbers go to float64 => format without trailing ".0"
+			results = append(results, strconv.FormatFloat(v, 'f', -1, 64))
+		case bool:
+			results = append(results, strconv.FormatBool(v))
+		case nil:
+			// choose behavior; here we treat nil as an error (you can switch to append(""))
+			return nil, errors.New("key is null: " + key)
+		default:
+			// For arrays/objects or anything unexpected, compact back to JSON
+			b, err := json.Marshal(v)
+			if err != nil {
+				return nil, fmt.Errorf("cannot stringify key %q: %w", key, err)
+			}
+			results = append(results, string(b))
+		}
 	}
 
 	return results, nil
