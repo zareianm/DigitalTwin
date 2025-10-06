@@ -108,9 +108,9 @@ func RunTask(t database.Task, models database.Models) {
 	for i, result := range resultsFromCode {
 		expectedValue, _ := strconv.ParseFloat(result, 64)
 		realResultValue, _ := strconv.ParseFloat(realOutputResult[i], 64)
-		errorRate := t.OutputParametersErrorRate[i]
+		errorPercentage := t.AcceptableErrorPercentage[i]
 
-		taskLog.Status[i] = isSafe(expectedValue, realResultValue, errorRate)
+		taskLog.Status[i] = isSafe(expectedValue, realResultValue, errorPercentage)
 	}
 
 	err = models.TaskLogs.Insert(&taskLog)
@@ -121,14 +121,14 @@ func RunTask(t database.Task, models database.Models) {
 	models.Tasks.UpdateLastExecute(&t)
 }
 
-func isSafe(expectedValue, realValue float64, errorRateInPercent int64) bool {
+func isSafe(expectedValue, realValue float64, errorPercent int64) bool {
 	if expectedValue == 0 {
 		return realValue != 0
 	}
 
 	diff := math.Abs(realValue-expectedValue) / expectedValue * 100
 
-	return diff <= float64(errorRateInPercent)
+	return diff <= float64(errorPercent)
 }
 
 func GetFileExtension(filePath string) string {

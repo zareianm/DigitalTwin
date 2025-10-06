@@ -198,8 +198,8 @@ const docTemplate = `{
                             "type": "integer"
                         },
                         "collectionFormat": "multi",
-                        "description": "output parmas error rates",
-                        "name": "outputParametersErrorRate",
+                        "description": "output parmas error percentage",
+                        "name": "acceptableErrorPercentage",
                         "in": "formData",
                         "required": true
                     },
@@ -263,6 +263,17 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "main.AcceptableErrorPercentage": {
+            "type": "object",
+            "properties": {
+                "errorPercentage": {
+                    "type": "integer"
+                },
+                "parameterName": {
+                    "type": "string"
+                }
+            }
+        },
         "main.DeviceListOutputModel": {
             "type": "object",
             "properties": {
@@ -281,17 +292,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "parameterValue": {
-                    "type": "string"
-                }
-            }
-        },
-        "main.MaximumErrorRate": {
-            "type": "object",
-            "properties": {
-                "errorRate": {
-                    "type": "integer"
-                },
-                "parameterName": {
                     "type": "string"
                 }
             }
@@ -327,6 +327,12 @@ const docTemplate = `{
         "main.TaskDetailOutputModel": {
             "type": "object",
             "properties": {
+                "acceptableErrorPercentage": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/main.AcceptableErrorPercentage"
+                    }
+                },
                 "createdAt": {
                     "type": "string"
                 },
@@ -344,12 +350,6 @@ const docTemplate = `{
                 },
                 "isActive": {
                     "type": "boolean"
-                },
-                "maximumErrorRates": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/main.MaximumErrorRate"
-                    }
                 },
                 "pluginOperatingHours": {
                     "type": "number"

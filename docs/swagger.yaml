@@ -1,4 +1,11 @@
 definitions:
+  main.AcceptableErrorPercentage:
+    properties:
+      errorPercentage:
+        type: integer
+      parameterName:
+        type: string
+    type: object
   main.DeviceListOutputModel:
     properties:
       deviceId:
@@ -11,13 +18,6 @@ definitions:
       parameterName:
         type: string
       parameterValue:
-        type: string
-    type: object
-  main.MaximumErrorRate:
-    properties:
-      errorRate:
-        type: integer
-      parameterName:
         type: string
     type: object
   main.OutputParameter:
@@ -40,6 +40,10 @@ definitions:
     type: object
   main.TaskDetailOutputModel:
     properties:
+      acceptableErrorPercentage:
+        items:
+          $ref: '#/definitions/main.AcceptableErrorPercentage'
+        type: array
       createdAt:
         type: string
       data:
@@ -52,10 +56,6 @@ definitions:
         type: string
       isActive:
         type: boolean
-      maximumErrorRates:
-        items:
-          $ref: '#/definitions/main.MaximumErrorRate'
-        type: array
       pluginOperatingHours:
         type: number
       systemErrorPercentage:
@@ -210,11 +210,11 @@ paths:
         required: true
         type: array
       - collectionFormat: multi
-        description: output parmas error rates
+        description: output parmas error percentage
         in: formData
         items:
           type: integer
-        name: outputParametersErrorRate
+        name: acceptableErrorPercentage
         required: true
         type: array
       - description: start time in UTC and RFC3339 format (e.g. 2025-08-18T14:30:00Z)

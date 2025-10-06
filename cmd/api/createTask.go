@@ -37,7 +37,7 @@ type SaveTaskResult struct {
 //			@Param        	intervalTimeInMinutes     formData  	int   		true  	"interval time in minutes"
 //			@Param        	inputParameters     	  formData  	[]string   	true  	"input parmas" collectionFormat(multi)
 //			@Param        	outputParameters          formData  	[]string   	true  	"output parmas" collectionFormat(multi)
-//			@Param        	outputParametersErrorRate formData  	[]int  	 	true  	"output parmas error rates" collectionFormat(multi)
+//			@Param        	acceptableErrorPercentage formData  	[]int  	 	true  	"output parmas error percentage" collectionFormat(multi)
 //			@Param    		startTime   			  formData      string  	true    "start time in UTC and RFC3339 format (e.g. 2025-08-18T14:30:00Z)" format(date-time)
 //			@Param    		endTime     			  formData  	string      true    "end time in UTC and RFC3339 format (e.g. 2025-08-18T14:30:00Z)" format(date-time)
 //			@Success		201			{object}	SaveTaskResult
@@ -105,14 +105,14 @@ func (app *application) createTask(c *gin.Context) {
 	inputParams := c.PostFormArray("inputParameters")
 	outputParams := c.PostFormArray("outputParameters")
 
-	var outputErrorRates []int64
-	for _, val := range c.PostFormArray("outputParametersErrorRate") {
+	var acceptableErrorPercentage []int64
+	for _, val := range c.PostFormArray("acceptableErrorPercentage") {
 		num, err := strconv.Atoi(val)
 		if err != nil {
-			c.JSON(400, gin.H{"error": "invalid outputParametersErrorRate"})
+			c.JSON(400, gin.H{"error": "invalid acceptableErrorPercentage"})
 			return
 		}
-		outputErrorRates = append(outputErrorRates, int64(num))
+		acceptableErrorPercentage = append(acceptableErrorPercentage, int64(num))
 	}
 
 	device, err := deviceService.GetDeviceWithData(deviceId, accessToken.(string))
@@ -186,7 +186,7 @@ func (app *application) createTask(c *gin.Context) {
 		EndTime:                   endTime,
 		InputParameters:           inputParams,
 		OutputParameters:          outputParams,
-		OutputParametersErrorRate: outputErrorRates,
+		AcceptableErrorPercentage: acceptableErrorPercentage,
 		FilePath:                  filepath,
 		TaskName:                  taskName,
 		UserId:                    userId,

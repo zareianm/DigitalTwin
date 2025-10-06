@@ -52,20 +52,20 @@ func (app *application) getTaskDetail(c *gin.Context) {
 	}
 
 	result := TaskDetailOutputModel{
-		TaskId:               task.TaskId,
-		DeviceId:             task.DeviceId,
-		CreatedAt:            task.CreatedAt,
-		IsActive:             task.StartTime.Before(time.Now()) && task.EndTime.After(time.Now()),
-		PluginOperatingHours: getTaskOperatingHour(*task),
-		Data:                 []TaskLog{},
-		MaximumErrorRates:    []MaximumErrorRate{},
-		TaskName:             task.TaskName,
-		DeviceName:           task.DeviceName,
+		TaskId:                    task.TaskId,
+		DeviceId:                  task.DeviceId,
+		CreatedAt:                 task.CreatedAt,
+		IsActive:                  task.StartTime.Before(time.Now()) && task.EndTime.After(time.Now()),
+		PluginOperatingHours:      getTaskOperatingHour(*task),
+		Data:                      []TaskLog{},
+		AcceptableErrorPercentage: []AcceptableErrorPercentage{},
+		TaskName:                  task.TaskName,
+		DeviceName:                task.DeviceName,
 	}
 
 	getTaskLogs(taskLogs, &result)
 
-	getParameterMaximumErrorRate(*task, &result)
+	getParameterAcceptableErrorPercentage(*task, &result)
 
 	calculateSystemErrorPercentage(&result)
 
@@ -122,15 +122,15 @@ func getTaskOperatingHour(t database.Task) float64 {
 	return operatingHours
 }
 
-func getParameterMaximumErrorRate(task database.Task, result *TaskDetailOutputModel) {
-	for i, errorRate := range task.OutputParametersErrorRate {
+func getParameterAcceptableErrorPercentage(task database.Task, result *TaskDetailOutputModel) {
+	for i, errorPercentage := range task.AcceptableErrorPercentage {
 
-		maximumErrorRate := MaximumErrorRate{
-			ParameterName: task.OutputParameters[i],
-			ErrorRate:     errorRate,
+		maximumErrorPercentage := AcceptableErrorPercentage{
+			ParameterName:   task.OutputParameters[i],
+			ErrorPercentage: errorPercentage,
 		}
 
-		result.MaximumErrorRates = append(result.MaximumErrorRates, maximumErrorRate)
+		result.AcceptableErrorPercentage = append(result.AcceptableErrorPercentage, maximumErrorPercentage)
 	}
 }
 
@@ -164,16 +164,16 @@ func calculateSystemErrorPercentage(result *TaskDetailOutputModel) {
 }
 
 type TaskDetailOutputModel struct {
-	TaskId                int                `json:"taskId"`
-	DeviceId              int                `json:"deviceId"`
-	CreatedAt             time.Time          `json:"createdAt"`
-	IsActive              bool               `json:"isActive"`
-	PluginOperatingHours  float64            `json:"pluginOperatingHours"`
-	Data                  []TaskLog          `json:"data"`
-	MaximumErrorRates     []MaximumErrorRate `json:"maximumErrorRates"`
-	SystemErrorPercentage float64            `json:"systemErrorPercentage"`
-	TaskName              string             `json:"taskName"`
-	DeviceName            string             `json:"deviceName"`
+	TaskId                    int                         `json:"taskId"`
+	DeviceId                  int                         `json:"deviceId"`
+	CreatedAt                 time.Time                   `json:"createdAt"`
+	IsActive                  bool                        `json:"isActive"`
+	PluginOperatingHours      float64                     `json:"pluginOperatingHours"`
+	Data                      []TaskLog                   `json:"data"`
+	AcceptableErrorPercentage []AcceptableErrorPercentage `json:"acceptableErrorPercentage"`
+	SystemErrorPercentage     float64                     `json:"systemErrorPercentage"`
+	TaskName                  string                      `json:"taskName"`
+	DeviceName                string                      `json:"deviceName"`
 }
 
 type TaskLog struct {
@@ -194,7 +194,7 @@ type OutputParameter struct {
 	Status                   bool   `json:"status"`
 }
 
-type MaximumErrorRate struct {
-	ParameterName string `json:"parameterName"`
-	ErrorRate     int64  `json:"errorRate"`
+type AcceptableErrorPercentage struct {
+	ParameterName   string `json:"parameterName"`
+	ErrorPercentage int64  `json:"errorPercentage"`
 }
