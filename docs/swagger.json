@@ -207,8 +207,7 @@
                         "format": "date-time",
                         "description": "end time in UTC and RFC3339 format (e.g. 2025-08-18T14:30:00Z)",
                         "name": "endTime",
-                        "in": "formData",
-                        "required": true
+                        "in": "formData"
                     }
                 ],
                 "responses": {

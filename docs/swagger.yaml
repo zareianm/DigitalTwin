@@ -227,7 +227,6 @@ paths:
         format: date-time
         in: formData
         name: endTime
-        required: true
         type: string
       produces:
       - application/json

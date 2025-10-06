@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS tasks (
         created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
         last_run TIMESTAMPTZ DEFAULT NULL,
         start_time TIMESTAMPTZ NOT NULL DEFAULT now(),
-        end_time TIMESTAMPTZ NOT NULL DEFAULT now(),
+        end_time TIMESTAMPTZ DEFAULT now(),
         device_id INTEGER NOT NULL DEFAULT 0,
         input_parameters TEXT[] NOT NULL DEFAULT '{}',
         output_parameters TEXT[] NOT NULL DEFAULT '{}',

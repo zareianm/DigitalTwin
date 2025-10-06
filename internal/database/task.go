@@ -20,7 +20,7 @@ type Task struct {
 	CreatedAt                 time.Time  `json:"created_at"`
 	LastRun                   *time.Time `json:"last_run"`
 	StartTime                 time.Time  `json:"start_time"`
-	EndTime                   time.Time  `json:"end_time"`
+	EndTime                   *time.Time `json:"end_time"`
 	InputParameters           []string   `json:"input_parameters"`
 	OutputParameters          []string   `json:"output_parameters"`
 	AcceptableErrorPercentage []int64    `json:"acceptable_error_percentage"`

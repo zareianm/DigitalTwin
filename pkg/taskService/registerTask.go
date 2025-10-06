@@ -41,7 +41,7 @@ func RunTask(t database.Task, models database.Models) {
 
 	now := time.Now().UTC()
 
-	if now.Before(t.StartTime) || now.After(t.EndTime) {
+	if now.Before(t.StartTime) || (t.EndTime != nil && now.After(*t.EndTime)) {
 		return
 	}
 

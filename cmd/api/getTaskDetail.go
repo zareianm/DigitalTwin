@@ -55,7 +55,7 @@ func (app *application) getTaskDetail(c *gin.Context) {
 		TaskId:                    task.TaskId,
 		DeviceId:                  task.DeviceId,
 		CreatedAt:                 task.CreatedAt,
-		IsActive:                  task.StartTime.Before(time.Now()) && task.EndTime.After(time.Now()),
+		IsActive:                  task.StartTime.Before(time.Now()) && (task.EndTime == nil || task.EndTime.After(time.Now())),
 		PluginOperatingHours:      getTaskOperatingHour(*task),
 		Data:                      []TaskLog{},
 		AcceptableErrorPercentage: []AcceptableErrorPercentage{},
@@ -109,7 +109,7 @@ func getTaskOperatingHour(t database.Task) float64 {
 	now := time.Now().UTC()
 
 	var operatingHours float64
-	if now.After(t.EndTime) {
+	if t.EndTime != nil && now.After(*t.EndTime) {
 		operatingHours = t.EndTime.Sub(t.StartTime).Hours()
 	} else {
 		operatingHours = now.Sub(t.StartTime).Hours()

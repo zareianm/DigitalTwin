@@ -39,7 +39,7 @@ type SaveTaskResult struct {
 //			@Param        	outputParameters          formData  	[]string   	true  	"output parmas" collectionFormat(multi)
 //			@Param        	acceptableErrorPercentage formData  	[]int  	 	true  	"output parmas error percentage" collectionFormat(multi)
 //			@Param    		startTime   			  formData      string  	true    "start time in UTC and RFC3339 format (e.g. 2025-08-18T14:30:00Z)" format(date-time)
-//			@Param    		endTime     			  formData  	string      true    "end time in UTC and RFC3339 format (e.g. 2025-08-18T14:30:00Z)" format(date-time)
+//			@Param    		endTime     			  formData  	string      false    "end time in UTC and RFC3339 format (e.g. 2025-08-18T14:30:00Z)" format(date-time)
 //			@Success		201			{object}	SaveTaskResult
 //			@Router			/api/v1/tasks/create [post]
 //	        @Security		BearerAuth
@@ -86,10 +86,14 @@ func (app *application) createTask(c *gin.Context) {
 	}
 
 	endTimeStr := c.PostForm("endTime")
-	endTime, err := time.Parse(time.RFC3339, endTimeStr)
+	var endTime *time.Time
+
+	endTimeTemp, err := time.Parse(time.RFC3339, endTimeStr)
+
 	if err != nil {
-		c.JSON(400, gin.H{"error": "invalid endTime, must be RFC3339"})
-		return
+		endTime = nil
+	} else {
+		endTime = &endTimeTemp
 	}
 
 	if startTime.Before(time.Now().UTC()) {
