@@ -20,8 +20,8 @@ type DeviceListModel struct {
 	DeviceName string
 }
 
-func GetAllDevices(token string) ([]DeviceListModel, error) {
-	url := "https://api.metable.ir/api/device_list/"
+func GetDevicesWithPagination(token string, page int) ([]DeviceListModel, int, error) {
+	url := fmt.Sprintf("https://api.metable.ir/api/device_list/?page=%d", page)
 
 	// Create HTTP request
 	req, err := http.NewRequest("GET", url, nil)
@@ -43,17 +43,17 @@ func GetAllDevices(token string) ([]DeviceListModel, error) {
 	// Read and parse response
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		panic(err)
+		return nil, 500, err
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("failed to get devices: %s", resp.Status)
+		return nil, 500, fmt.Errorf("failed to get devices: %s", resp.Status)
 	}
 
 	var devicesFromApi []DeviceApiModel
 	err = json.Unmarshal(body, &devicesFromApi)
 	if err != nil {
-		panic(err)
+		return nil, 500, err
 	}
 
 	var devices []DeviceListModel
@@ -64,7 +64,7 @@ func GetAllDevices(token string) ([]DeviceListModel, error) {
 		})
 	}
 
-	return devices, nil
+	return devices, 200, nil
 
 }
 

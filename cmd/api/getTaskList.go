@@ -50,7 +50,7 @@ func (app *application) getAllTasks(c *gin.Context) {
 			TaskId:               t.TaskId,
 			DeviceId:             t.DeviceId,
 			CreatedAt:            t.CreatedAt,
-			IsActive:             t.CronId == nil || *t.CronId == 0 || (t.StartTime.Before(time.Now()) && (t.EndTime == nil || t.EndTime.After(time.Now()))),
+			IsActive:             t.Active && (t.StartTime.Before(time.Now()) && (t.EndTime == nil || t.EndTime.After(time.Now()))),
 			PluginOperatingHours: operatingHours,
 			TaskName:             t.TaskName,
 			DeviceName:           t.DeviceName,

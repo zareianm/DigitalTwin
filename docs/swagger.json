@@ -6,37 +6,6 @@
         "version": "1.0"
     },
     "paths": {
-        "/api/v1/devices": {
-            "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Returns all devices",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "devices"
-                ],
-                "summary": "Returns all devices",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/main.DeviceListOutputModel"
-                            }
-                        }
-                    }
-                }
-            }
-        },
         "/api/v1/devices/getDeviceParameters/{device_id}": {
             "get": {
                 "security": [
@@ -71,6 +40,46 @@
                             "type": "array",
                             "items": {
                                 "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/devices/{page}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Returns devices with pagination",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "devices"
+                ],
+                "summary": "Returns devices with pagination",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "number of page",
+                        "name": "page",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/main.DeviceListOutputModel"
                             }
                         }
                     }

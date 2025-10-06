@@ -9,24 +9,36 @@ import (
 	_ "github.com/joho/godotenv/autoload"
 )
 
-// GetDevices returns all devices
+// GetDevices Returns devices with pagination
 //
-//	@Summary		Returns all devices
-//	@Description	Returns all devices
+//	@Summary		Returns devices with pagination
+//	@Description	Returns devices with pagination
 //	@Tags			devices
 //	@Accept			json
 //	@Produce		json
+//	@Param			page	path		int	true	"number of page"
 //	@Success		200		{object}	[]DeviceListOutputModel
-//	@Router			/api/v1/devices [get]
+//	@Router			/api/v1/devices/{page} [get]
 //	@Security		BearerAuth
-func (app *application) getAllDevices(c *gin.Context) {
+func (app *application) getDevicesWithPagination(c *gin.Context) {
 
 	accessToken, _ := c.Get("access_token")
 
-	devices, err := deviceService.GetAllDevices(accessToken.(string))
+	page, err := strconv.Atoi(c.Param("page"))
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retreive devices"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid page number"})
+		return
+	}
+
+	if page < 1 {
+		page = 1
+	}
+
+	devices, statusCode, err := deviceService.GetDevicesWithPagination(accessToken.(string), page)
+
+	if err != nil {
+		c.JSON(statusCode, err.Error())
 		return
 	}
 

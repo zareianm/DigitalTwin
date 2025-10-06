@@ -26,7 +26,7 @@ func (app *application) routes() http.Handler {
 
 	v1 := g.Group("/api/v1", auth.AuthMiddleware())
 	{
-		v1.GET("/devices", app.getAllDevices)
+		v1.GET("/devices/:page", app.getDevicesWithPagination)
 		v1.GET("/devices/getDeviceParameters/:device_id", app.getDeviceParameters)
 
 		v1.POST("/tasks/create", app.createTask)

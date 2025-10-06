@@ -105,11 +105,17 @@ info:
   title: DigitalTwin API
   version: "1.0"
 paths:
-  /api/v1/devices:
+  /api/v1/devices/{page}:
     get:
       consumes:
       - application/json
-      description: Returns all devices
+      description: Returns devices with pagination
+      parameters:
+      - description: number of page
+        in: path
+        name: page
+        required: true
+        type: integer
       produces:
       - application/json
       responses:
@@ -121,7 +127,7 @@ paths:
             type: array
       security:
       - BearerAuth: []
-      summary: Returns all devices
+      summary: Returns devices with pagination
       tags:
       - devices
   /api/v1/devices/getDeviceParameters/{device_id}:

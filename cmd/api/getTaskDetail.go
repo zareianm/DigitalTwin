@@ -55,7 +55,7 @@ func (app *application) getTaskDetail(c *gin.Context) {
 		TaskId:                    task.TaskId,
 		DeviceId:                  task.DeviceId,
 		CreatedAt:                 task.CreatedAt,
-		IsActive:                  task.CronId == nil || *task.CronId == 0 || (task.StartTime.Before(time.Now()) && (task.EndTime == nil || task.EndTime.After(time.Now()))),
+		IsActive:                  task.Active && (task.StartTime.Before(time.Now()) && (task.EndTime == nil || task.EndTime.After(time.Now()))),
 		PluginOperatingHours:      getTaskOperatingHour(*task),
 		Data:                      []TaskLog{},
 		AcceptableErrorPercentage: []AcceptableErrorPercentage{},
