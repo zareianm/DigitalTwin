@@ -55,5 +55,5 @@ func (app *application) stopTask(c *gin.Context) {
 }
 
 type StopTaskResultModel struct {
-	Success bool `"json:"success"`
+	Success bool `json:"success"`
 }

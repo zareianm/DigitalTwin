@@ -108,9 +108,15 @@ func (app *application) createTask(c *gin.Context) {
 
 	inputParams := c.PostFormArray("inputParameters")
 	outputParams := c.PostFormArray("outputParameters")
+	acceptableErrorPercentageStr := c.PostFormArray("acceptableErrorPercentage")
+
+	if len(outputParams) != len(acceptableErrorPercentageStr) {
+		c.JSON(400, gin.H{"error": "number of acceptableErrorPercentage should be equal with outputParameters"})
+		return
+	}
 
 	var acceptableErrorPercentage []int64
-	for _, val := range c.PostFormArray("acceptableErrorPercentage") {
+	for _, val := range acceptableErrorPercentageStr {
 		num, err := strconv.Atoi(val)
 		if err != nil {
 			c.JSON(400, gin.H{"error": "invalid acceptableErrorPercentage"})
