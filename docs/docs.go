@@ -299,13 +299,13 @@ const docTemplate = `{
         "main.OutputParameter": {
             "type": "object",
             "properties": {
-                "parameterCodeValue": {
-                    "type": "string"
-                },
                 "parameterDeviceValue": {
                     "type": "string"
                 },
                 "parameterName": {
+                    "type": "string"
+                },
+                "parameterSimulationValue": {
                     "type": "string"
                 },
                 "status": {

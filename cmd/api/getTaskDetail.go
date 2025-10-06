@@ -92,10 +92,10 @@ func getTaskLogs(taskLogs []*database.TaskLog, result *TaskDetailOutputModel) {
 
 		for i, outputParameterName := range taskLog.OutputParameterNames {
 			outPutParam := OutputParameter{
-				ParameterName:        outputParameterName,
-				ParameterDeviceValue: taskLog.OutputParameterRealValues[i],
-				ParameterCodeValue:   taskLog.OutputParameterFromCodeVales[i],
-				Status:               taskLog.Status[i],
+				ParameterName:            outputParameterName,
+				ParameterDeviceValue:     taskLog.OutputParameterRealValues[i],
+				ParameterSimulationValue: taskLog.OutputParameterFromCodeVales[i],
+				Status:                   taskLog.Status[i],
 			}
 
 			outputLog.OutputParameters = append(outputLog.OutputParameters, outPutParam)
@@ -142,7 +142,7 @@ func calculateSystemErrorPercentage(result *TaskDetailOutputModel) {
 
 		for _, outputParameter := range taskLog.OutputParameters {
 
-			expected, _ := strconv.ParseFloat(outputParameter.ParameterCodeValue, 64)
+			expected, _ := strconv.ParseFloat(outputParameter.ParameterSimulationValue, 64)
 
 			if expected == 0 {
 				continue
@@ -188,10 +188,10 @@ type InputParameter struct {
 }
 
 type OutputParameter struct {
-	ParameterName        string `json:"parameterName"`
-	ParameterDeviceValue string `json:"parameterDeviceValue"`
-	ParameterCodeValue   string `json:"parameterCodeValue"`
-	Status               bool   `json:"status"`
+	ParameterName            string `json:"parameterName"`
+	ParameterDeviceValue     string `json:"parameterDeviceValue"`
+	ParameterSimulationValue string `json:"parameterSimulationValue"`
+	Status                   bool   `json:"status"`
 }
 
 type MaximumErrorRate struct {

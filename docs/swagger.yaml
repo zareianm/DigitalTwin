@@ -22,11 +22,11 @@ definitions:
     type: object
   main.OutputParameter:
     properties:
-      parameterCodeValue:
-        type: string
       parameterDeviceValue:
         type: string
       parameterName:
+        type: string
+      parameterSimulationValue:
         type: string
       status:
         type: boolean
