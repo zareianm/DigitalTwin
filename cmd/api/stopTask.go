@@ -44,6 +44,7 @@ func (app *application) stopTask(c *gin.Context) {
 
 	if task.CronId != nil && *task.CronId > 0 {
 		app.cr.Remove(cron.EntryID(*task.CronId))
+		app.models.Tasks.DeactiveTask(task)
 	}
 
 	result := StopTaskResultModel{

@@ -30,6 +30,7 @@ type Task struct {
 	AccessToken               string     `json:"access_token"`
 	DeviceName                string     `json:"device_name"`
 	CronId                    *int64     `json:"cron_id"`
+	Active                    bool       `json:"active"`
 }
 
 func (m *TaskModel) Insert(task *Task) error {
@@ -77,7 +78,7 @@ func (m *TaskModel) GetAllUserTask(userId int) ([]*Task, error) {
 		err := rows.Scan(&task.TaskId, &task.TimeInterval, &task.CreatedAt, &task.LastRun,
 			&task.StartTime, &task.EndTime, &task.DeviceId, pq.Array(&task.InputParameters),
 			pq.Array(&task.OutputParameters), pq.Array(&task.AcceptableErrorPercentage),
-			&task.FilePath, &task.TaskName, &task.UserId, &task.AccessToken, &task.DeviceName, &task.CronId)
+			&task.FilePath, &task.TaskName, &task.UserId, &task.AccessToken, &task.DeviceName, &task.CronId, &task.Active)
 
 		if err != nil {
 			return nil, err
@@ -105,7 +106,8 @@ func (m *TaskModel) Get(userId int, taskId int) (*Task, error) {
 	err := m.DB.QueryRowContext(ctx, query, userId, taskId).Scan(&task.TaskId, &task.TimeInterval, &task.CreatedAt,
 		&task.LastRun, &task.StartTime, &task.EndTime, &task.DeviceId,
 		pq.Array(&task.InputParameters), pq.Array(&task.OutputParameters),
-		pq.Array(&task.AcceptableErrorPercentage), &task.FilePath, &task.TaskName, &task.UserId, &task.AccessToken, &task.DeviceName, &task.CronId)
+		pq.Array(&task.AcceptableErrorPercentage), &task.FilePath, &task.TaskName,
+		&task.UserId, &task.AccessToken, &task.DeviceName, &task.CronId, &task.Active)
 
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -152,7 +154,7 @@ func (m *TaskModel) GetAll() ([]*Task, error) {
 		err := rows.Scan(&task.TaskId, &task.TimeInterval, &task.CreatedAt, &task.LastRun,
 			&task.StartTime, &task.EndTime, &task.DeviceId, pq.Array(&task.InputParameters),
 			pq.Array(&task.OutputParameters), pq.Array(&task.AcceptableErrorPercentage),
-			&task.FilePath, &task.TaskName, &task.UserId, &task.AccessToken, &task.DeviceName, &task.CronId)
+			&task.FilePath, &task.TaskName, &task.UserId, &task.AccessToken, &task.DeviceName, &task.CronId, &task.Active)
 
 		if err != nil {
 			return nil, err
@@ -176,6 +178,21 @@ func (m *TaskModel) UpdateTaskCronId(task *Task, cronId int64) error {
 	query := "UPDATE tasks SET cron_id = $1 WHERE task_id = $2"
 
 	_, err := m.DB.ExecContext(ctx, query, cronId, task.TaskId)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *TaskModel) DeactiveTask(task *Task) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	query := "UPDATE tasks SET active = $1, cron_id = $2 WHERE task_id = $3"
+
+	_, err := m.DB.ExecContext(ctx, query, false, 0, task.TaskId)
 
 	if err != nil {
 		return err

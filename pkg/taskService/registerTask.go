@@ -25,8 +25,10 @@ func RunMissedTasks(cr *cron.Cron, models database.Models) {
 	}
 
 	for i := 0; i < len(rows); i++ {
-		cronId := RegisterTask(*rows[i], cr, models)
-		models.Tasks.UpdateTaskCronId(rows[i], cronId)
+		if rows[i].Active {
+			cronId := RegisterTask(*rows[i], cr, models)
+			models.Tasks.UpdateTaskCronId(rows[i], cronId)
+		}
 	}
 }
 
