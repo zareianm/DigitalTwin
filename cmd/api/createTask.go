@@ -119,9 +119,9 @@ func (app *application) createTask(c *gin.Context) {
 		acceptableErrorPercentage = append(acceptableErrorPercentage, int64(num))
 	}
 
-	device, err := deviceService.GetDeviceWithData(deviceId, accessToken.(string))
+	device, statusCode, err := deviceService.GetDeviceWithData(deviceId, accessToken.(string))
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retreive device"})
+		c.JSON(statusCode, err.Error())
 		return
 	}
 

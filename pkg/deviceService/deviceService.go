@@ -26,7 +26,7 @@ func GetDevicesWithPagination(token string, page int) ([]DeviceListModel, int, e
 	// Create HTTP request
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		panic(err)
+		return nil, 500, err
 	}
 
 	req.Header.Set("Accept", "application/json")
@@ -36,7 +36,7 @@ func GetDevicesWithPagination(token string, page int) ([]DeviceListModel, int, e
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		panic(err)
+		return nil, 500, err
 	}
 	defer resp.Body.Close()
 
@@ -88,13 +88,13 @@ type DeviceWithData struct {
 	Json       map[string]interface{} `json:"json"`
 }
 
-func GetDeviceWithData(deviceId int, token string) (*DeviceWithData, error) {
-	url := "https://api.metable.ir/api/data_list/"
+func GetDeviceWithData(deviceId int, token string) (*DeviceWithData, int, error) {
+	url := fmt.Sprintf("https://api.metable.ir/api/data_list/?devices=%d", deviceId)
 
 	// Prepare the request
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		panic(err)
+		return nil, 500, err
 	}
 	req.Header.Set("Accept", "application/json")
 	req.Header.Set("Authorization", token)
@@ -103,34 +103,34 @@ func GetDeviceWithData(deviceId int, token string) (*DeviceWithData, error) {
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		panic(err)
+		return nil, 500, err
 	}
 	defer resp.Body.Close()
 
 	// Read and parse
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		panic(err)
+		return nil, 500, err
 	}
 
 	if resp.StatusCode != http.StatusOK {
 		fmt.Printf("Error: %s\n%s\n", resp.Status, string(body))
-		return nil, fmt.Errorf("failed to get device data: %s", resp.Status)
+		return nil, 500, fmt.Errorf("failed to get device data: %s", resp.Status)
 	}
 
 	var dataResp DataListResponse
 	err = json.Unmarshal(body, &dataResp)
 	if err != nil {
-		panic(err)
+		return nil, 500, err
 	}
 
 	var deviceData *DeviceWithData = getLatestByDeviceId(dataResp.OriginalData, deviceId)
 
 	if deviceData == nil {
-		return nil, fmt.Errorf("no data found for device ID %d", deviceId)
+		return nil, 404, fmt.Errorf("no data found for device ID %d", deviceId)
 	}
 
-	return deviceData, nil
+	return deviceData, 200, nil
 
 }
 

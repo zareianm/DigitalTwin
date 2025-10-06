@@ -52,7 +52,7 @@ func RunTask(t database.Task, models database.Models) {
 		return
 	}
 
-	device, err := deviceService.GetDeviceWithData(t.DeviceId, t.AccessToken)
+	device, _, err := deviceService.GetDeviceWithData(t.DeviceId, t.AccessToken)
 	if err != nil {
 		return
 	}

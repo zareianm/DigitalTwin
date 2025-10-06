@@ -79,10 +79,10 @@ func (app *application) getDeviceParameters(c *gin.Context) {
 
 	accessToken, _ := c.Get("access_token")
 
-	deviceData, err := deviceService.GetDeviceWithData(deviceId, accessToken.(string))
+	deviceData, statusCode, err := deviceService.GetDeviceWithData(deviceId, accessToken.(string))
 
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(statusCode, err.Error())
 		return
 	}
 
